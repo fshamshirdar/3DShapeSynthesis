@@ -43,6 +43,7 @@ GLUI_Listbox	*display_list;
 GLUI_Panel      *display_panel;
 
 SMFParser	*parser;
+Data		*data = NULL;
 
 /********** User IDs for callbacks ********/
 #define OPEN_ID              100
@@ -261,7 +262,7 @@ void myGlutDisplay()
 
   glScalef(scale, scale, scale);
 
-  if (parser->regions.size() > 0) {
+  if (data != NULL) {
 	  draw_axes(.52f);
 	  if (curr_string == 2 || curr_string == 3) { // Wireframe
 		  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -270,8 +271,8 @@ void myGlutDisplay()
 	  }
 
 	  glBegin(GL_TRIANGLES);
-	  for(std::vector<WingedEdge::Region*>::iterator rit = parser->regions.begin(); rit != parser->regions.end(); rit++) {
-		  for(std::vector<WingedEdge::Face*>::iterator it = (*rit)->faces.begin(); it != (*rit)->faces.end(); it++) {
+	  for(std::vector<Data::Region*>::iterator rit = data->regions.begin(); rit != data->regions.end(); rit++) {
+		  for(std::vector<Data::Face*>::iterator it = (*rit)->faces.begin(); it != (*rit)->faces.end(); it++) {
 			  if (! (*it)->v1 || ! (*it)->v2 || ! (*it)->v3) {
 				  continue;
 			  }
@@ -323,7 +324,7 @@ void myGlutDisplay()
 int main(int argc, char* argv[])
 {
   parser = new SMFParser();
-  parser->load("ChairA.obj");
+  data = parser->load("ChairA.obj");
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -426,6 +427,9 @@ int main(int argc, char* argv[])
   glutMainLoop();
 
   delete parser;
+  if (data != NULL) {
+    delete data;
+  }
 
   return EXIT_SUCCESS;
 }

@@ -14,5 +14,8 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 add_executable(smf_view
 	src/main.cpp
 	src/smf_parser.cpp
+	src/face.cpp
+	src/vertex.cpp
+	src/winged_edge.cpp
 )
 target_link_libraries(smf_view glui::glui_static ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${EIGEN_LIBRARIES})
