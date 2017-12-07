@@ -2,7 +2,9 @@
 #define __WEDS_H__
 
 #include <string>
+#include <Eigen/Core>
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <GL/glui.h>
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -27,7 +29,11 @@ public:
 		std::vector<Data::Face*> faces;  // dynamic array
 		std::vector<Data::W_edge*> edges;
 
+		Eigen::AlignedBox3f boundingBox;
+
 		std::vector<Data::Region*> neighbors;
+	public:
+		Region();
 	};
 
 	/**

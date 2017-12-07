@@ -1,6 +1,7 @@
 #include <string.h>
 #include <GL/glui.h>
 #include "smf_parser.h"
+#include "data.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -239,6 +240,79 @@ void draw_axes(float scale)
   glEnable(GL_LIGHTING);
 }
 
+void draw_bounding_box(Data::Region* region)
+{
+	glDisable( GL_LIGHTING );
+
+	glPushMatrix();
+	glScalef( scale, scale, scale );
+
+	glBegin( GL_LINES );
+
+	Eigen::Vector3f bottomLeftFloor = region->boundingBox.corner(Eigen::AlignedBox3f::BottomLeftFloor);
+	Eigen::Vector3f bottomRightFloor = region->boundingBox.corner(Eigen::AlignedBox3f::BottomRightFloor);
+	Eigen::Vector3f topLeftFloor = region->boundingBox.corner(Eigen::AlignedBox3f::TopLeftFloor);
+	Eigen::Vector3f topRightFloor = region->boundingBox.corner(Eigen::AlignedBox3f::TopRightFloor);
+	Eigen::Vector3f bottomLeftCeil = region->boundingBox.corner(Eigen::AlignedBox3f::BottomLeftCeil);
+	Eigen::Vector3f bottomRightCeil = region->boundingBox.corner(Eigen::AlignedBox3f::BottomRightCeil);
+	Eigen::Vector3f topLeftCeil = region->boundingBox.corner(Eigen::AlignedBox3f::TopLeftCeil);
+	Eigen::Vector3f topRightCeil = region->boundingBox.corner(Eigen::AlignedBox3f::TopRightCeil);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
+	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
+	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
+	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
+	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
+	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
+	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
+	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
+	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
+	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
+	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
+	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
+
+	glColor3f(1.0,  0.0, 0.0 );
+	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
+	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
+
+	glEnd();
+
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
+}
+
 /***************************************** myGlutDisplay() *****************/
 void myGlutDisplay()
 {
@@ -312,6 +386,11 @@ void myGlutDisplay()
 		  }
 	  }
 	  glEnd();
+  }
+
+
+  for(std::vector<Data::Region*>::iterator rit = data->regions.begin(); rit != data->regions.end(); rit++) {
+	draw_bounding_box(*rit);
   }
 
   glEnable( GL_LIGHTING );

@@ -23,7 +23,7 @@ Data* SMFParser::load(const std::string &filename)
 
 	float minDistance = 100.0;
 
-	Data::Region* currentRegion = new Data::Region;
+	Data::Region* currentRegion = new Data::Region();
 	Data::Region* previousRegion;
 
 	// load line by line
@@ -46,6 +46,26 @@ Data* SMFParser::load(const std::string &filename)
 			newVertex->pos[1] = y;
 			newVertex->pos[2] = z;
 			newVertex->pos[3] = 1;
+
+			if (x < currentRegion->boundingBox.min()[0]) {
+				currentRegion->boundingBox.min()[0] = x;
+			}
+			if (y < currentRegion->boundingBox.min()[1]) {
+				currentRegion->boundingBox.min()[1] = y;
+			}
+			if (z < currentRegion->boundingBox.min()[2]) {
+				currentRegion->boundingBox.min()[2] = z;
+			}
+			if (x > currentRegion->boundingBox.max()[0]) {
+				currentRegion->boundingBox.max()[0] = x;
+			}
+			if (y > currentRegion->boundingBox.max()[1]) {
+				currentRegion->boundingBox.max()[1] = y;
+			}
+			if (z > currentRegion->boundingBox.max()[2]) {
+				currentRegion->boundingBox.max()[2] = z;
+			}
+
 			currentRegion->vertices.push_back(newVertex); // TODO: modify smf file to store number of vertices as well
 			i++;
 			}
@@ -56,7 +76,7 @@ Data* SMFParser::load(const std::string &filename)
 			data->regions.push_back(currentRegion);
 			k++;
 			previousRegion = currentRegion;
-			currentRegion = new Data::Region;
+			currentRegion = new Data::Region();
 			std::cout << previousRegion->name << std::endl;
 			break;
 		case 'f':
