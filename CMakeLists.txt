@@ -21,6 +21,7 @@ add_executable(smf_view
 	src/region.cpp
 	src/part.cpp
 	src/winged_edge.cpp
+	src/mix_match.cpp
 	src/mixers/simple_box.cpp
 	src/mixers/eight_points.cpp
 )

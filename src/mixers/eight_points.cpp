@@ -4,11 +4,18 @@
 
 #include <iostream>
 
+#define SCALE_BOUNDING_BOX true
+#define K_NEAREST_NEIGHBORS 8
+
 Data* EightPoints::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
-	Data::Part* target = chair1->findPartByType(Data::Part::BACK_SHEET);
-	Data::Part* ref = chair2->findPartByType(Data::Part::BACK_SHEET);
+	Data::Part* target = chair1->findPartByType(Data::Part::SEAT_SHEET);
+	Data::Part* ref = chair2->findPartByType(Data::Part::SEAT_SHEET);
+
+	if (SCALE_BOUNDING_BOX) {
+		fitBoundingBox(ref, target);
+	}
 
 	Data::Vertex** refPoints = find8Points(ref);
 	Data::Vertex** targetPoints = find8Points(target);
@@ -39,13 +46,16 @@ Data* EightPoints::mix(Data* chair1, Data* chair2)
 				icp.insert(vd);
 			}
 
-			auto it = icp.begin();
-			sum = it->dist + (++it)->dist + (++it)->dist;
-
 			Eigen::Vector4f translation = Eigen::Vector4f::Zero();
+
+			auto it = icp.begin();
+			for (int i=0; i<K_NEAREST_NEIGHBORS; i++, it++) {
+				sum += it->dist;
+			}
+
  			it = icp.begin();
-			for (int i=0; i<3; i++, it++) { // three closest base points
-				translation += ((sum-it->dist) / (2*sum)) * it->translation;
+			for (int i=0; i<K_NEAREST_NEIGHBORS; i++, it++) { // three closest base points
+				translation += ((sum-it->dist) / ((K_NEAREST_NEIGHBORS-1)*sum)) * it->translation;
 			}
 			vertex->pos += translation;
 			vertex->pos[3] = 1;

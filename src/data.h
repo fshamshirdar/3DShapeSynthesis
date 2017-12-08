@@ -42,6 +42,8 @@ public:
 		std::vector<Data::Region*> regions;
 	public:
 		Part();
+		void resetBoundingBox();
+		void recalculateBoundingBox(Data::Vertex* vertex);
 	};
 
 	/**
@@ -60,6 +62,8 @@ public:
 		std::vector<Data::Region*> neighbors;
 	public:
 		Region();
+		void resetBoundingBox();
+		void recalculateBoundingBox(Data::Vertex* vertex);
 	};
 
 	/**

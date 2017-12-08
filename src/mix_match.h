@@ -7,6 +7,8 @@
 class MixMatch {
 public:
 	virtual Data* mix(Data* data1, Data* data2) = 0;
+	void fitBoundingBox(Data::Part* from, Data::Part* to);
+
 public:
 	std::string name;
 };
