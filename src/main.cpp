@@ -2,6 +2,9 @@
 #include <GL/glui.h>
 #include "smf_parser.h"
 #include "data.h"
+#include "mix_match.h"
+#include "mixers/simple_box.h"
+#include "mixers/eight_points.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -45,6 +48,9 @@ GLUI_Panel      *display_panel;
 
 SMFParser	*parser;
 Data		*data = NULL;
+Data		*data1 = NULL;
+Data		*data2 = NULL;
+MixMatch	*mixer = NULL;
 
 /********** User IDs for callbacks ********/
 #define OPEN_ID              100
@@ -80,7 +86,7 @@ void control_callback(int control)
   if (control == OPEN_ID) {
     std::string filename = "";
     filename = file_browser->get_file();
-    parser->load(filename);
+    data = parser->load(filename);
     // parser->simplify(50);
     glutPostRedisplay();
   }
@@ -240,7 +246,7 @@ void draw_axes(float scale)
   glEnable(GL_LIGHTING);
 }
 
-void draw_bounding_box(Data::Region* region)
+void draw_bounding_box(const Eigen::AlignedBox3f& boundingBox, const GLfloat* color)
 {
 	glDisable( GL_LIGHTING );
 
@@ -249,60 +255,49 @@ void draw_bounding_box(Data::Region* region)
 
 	glBegin( GL_LINES );
 
-	Eigen::Vector3f bottomLeftFloor = region->boundingBox.corner(Eigen::AlignedBox3f::BottomLeftFloor);
-	Eigen::Vector3f bottomRightFloor = region->boundingBox.corner(Eigen::AlignedBox3f::BottomRightFloor);
-	Eigen::Vector3f topLeftFloor = region->boundingBox.corner(Eigen::AlignedBox3f::TopLeftFloor);
-	Eigen::Vector3f topRightFloor = region->boundingBox.corner(Eigen::AlignedBox3f::TopRightFloor);
-	Eigen::Vector3f bottomLeftCeil = region->boundingBox.corner(Eigen::AlignedBox3f::BottomLeftCeil);
-	Eigen::Vector3f bottomRightCeil = region->boundingBox.corner(Eigen::AlignedBox3f::BottomRightCeil);
-	Eigen::Vector3f topLeftCeil = region->boundingBox.corner(Eigen::AlignedBox3f::TopLeftCeil);
-	Eigen::Vector3f topRightCeil = region->boundingBox.corner(Eigen::AlignedBox3f::TopRightCeil);
+	Eigen::Vector3f bottomLeftFloor = boundingBox.corner(Eigen::AlignedBox3f::BottomLeftFloor);
+	Eigen::Vector3f bottomRightFloor = boundingBox.corner(Eigen::AlignedBox3f::BottomRightFloor);
+	Eigen::Vector3f topLeftFloor = boundingBox.corner(Eigen::AlignedBox3f::TopLeftFloor);
+	Eigen::Vector3f topRightFloor = boundingBox.corner(Eigen::AlignedBox3f::TopRightFloor);
+	Eigen::Vector3f bottomLeftCeil = boundingBox.corner(Eigen::AlignedBox3f::BottomLeftCeil);
+	Eigen::Vector3f bottomRightCeil = boundingBox.corner(Eigen::AlignedBox3f::BottomRightCeil);
+	Eigen::Vector3f topLeftCeil = boundingBox.corner(Eigen::AlignedBox3f::TopLeftCeil);
+	Eigen::Vector3f topRightCeil = boundingBox.corner(Eigen::AlignedBox3f::TopRightCeil);
 
-	glColor3f(1.0,  0.0, 0.0 );
+	glColor3fv(color);
 	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
 	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
 	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
 	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
 	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
 	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
 	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
 	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
 	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
 	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
 	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
 	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
 
-	glColor3f(1.0,  0.0, 0.0 );
 	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
 	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
 
@@ -344,53 +339,109 @@ void myGlutDisplay()
 		  glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	  }
 
-	  glBegin(GL_TRIANGLES);
-	  for(std::vector<Data::Region*>::iterator rit = data->regions.begin(); rit != data->regions.end(); rit++) {
-		  for(std::vector<Data::Face*>::iterator it = (*rit)->faces.begin(); it != (*rit)->faces.end(); it++) {
-			  if (! (*it)->v1 || ! (*it)->v2 || ! (*it)->v3) {
-				  continue;
-			  }
+	  for(auto pit = data->parts.begin(); pit != data->parts.end(); pit++) {
+		  GLfloat pcolor[3] = {0.0, 1.0, 0.0};
+		  draw_bounding_box((*pit)->boundingBox, pcolor);
+		  for(auto rit = (*pit)->regions.begin(); rit != (*pit)->regions.end(); rit++) {
+			  GLfloat rcolor[3] = {1.0, 0.0, 0.0};
+			  draw_bounding_box((*rit)->boundingBox, rcolor);
+			  for(auto it = (*rit)->faces.begin(); it != (*rit)->faces.end(); it++) {
+				  if (! (*it)->v1 || ! (*it)->v2 || ! (*it)->v3) {
+					  continue;
+				  }
 
-			  // Vertex 1
-			  if (curr_string == 0 || curr_string == 3) { // Flat shaped
-				  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
-			  }
-			  else if (curr_string == 1) {
-				  glNormal3f((*it)->v1->normal.x(), (*it)->v1->normal.y(), (*it)->v1->normal.z());
-			  }
-			  glVertex3f((*it)->v1->pos.x(),
-					  (*it)->v1->pos.y(),
-					  (*it)->v1->pos.z());
+				  glBegin(GL_TRIANGLES);
+				  // Vertex 1
+				  if (curr_string == 0 || curr_string == 3) { // Flat shaped
+					  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+				  }
+				  else if (curr_string == 1) {
+					  glNormal3f((*it)->v1->normal.x(), (*it)->v1->normal.y(), (*it)->v1->normal.z());
+				  }
+				  glVertex3f((*it)->v1->pos.x(),
+						  (*it)->v1->pos.y(),
+						  (*it)->v1->pos.z());
 
-			  // Vertex 2
-			  if (curr_string == 0 || curr_string == 3) { // Flat shaped
-				  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
-			  }
-			  else if (curr_string == 1) {
-				  glNormal3f((*it)->v2->normal.x(), (*it)->v2->normal.y(), (*it)->v2->normal.z());
-			  }
-			  glVertex3f((*it)->v2->pos.x(),
-					  (*it)->v2->pos.y(),
-					  (*it)->v2->pos.z());
+				  // Vertex 2
+				  if (curr_string == 0 || curr_string == 3) { // Flat shaped
+					  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+				  }
+				  else if (curr_string == 1) {
+					  glNormal3f((*it)->v2->normal.x(), (*it)->v2->normal.y(), (*it)->v2->normal.z());
+				  }
+				  glVertex3f((*it)->v2->pos.x(),
+						  (*it)->v2->pos.y(),
+						  (*it)->v2->pos.z());
 
-			  // Vertex 3
-			  if (curr_string == 0 || curr_string == 3) { // Flat shaped
-				  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+				  // Vertex 3
+				  if (curr_string == 0 || curr_string == 3) { // Flat shaped
+					  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+				  }
+				  else if (curr_string == 1) {
+					  glNormal3f((*it)->v3->normal.x(), (*it)->v3->normal.y(), (*it)->v3->normal.z());
+				  }
+				  glVertex3f((*it)->v3->pos.x(),
+						  (*it)->v3->pos.y(),
+						  (*it)->v3->pos.z());
+
+				  glEnd();
 			  }
-			  else if (curr_string == 1) {
-				  glNormal3f((*it)->v3->normal.x(), (*it)->v3->normal.y(), (*it)->v3->normal.z());
-			  }
-			  glVertex3f((*it)->v3->pos.x(),
-					  (*it)->v3->pos.y(),
-					  (*it)->v3->pos.z());
 		  }
 	  }
-	  glEnd();
-  }
 
+/*
+	  for(auto pit = data2->parts.begin(); pit != data2->parts.end(); pit++) {
+		  GLfloat pcolor[3] = {0.0, 1.0, 0.0};
+//		  if ((*pit)->type == Data::Part::Type::SEAT_SHEET) {
+			  draw_bounding_box((*pit)->boundingBox, pcolor);
+			  for(auto rit = (*pit)->regions.begin(); rit != (*pit)->regions.end(); rit++) {
+				  GLfloat rcolor[3] = {1.0, 0.0, 0.0};
+				  draw_bounding_box((*rit)->boundingBox, rcolor);
+				  for(auto it = (*rit)->faces.begin(); it != (*rit)->faces.end(); it++) {
+					  if (! (*it)->v1 || ! (*it)->v2 || ! (*it)->v3) {
+						  continue;
+					  }
 
-  for(std::vector<Data::Region*>::iterator rit = data->regions.begin(); rit != data->regions.end(); rit++) {
-	draw_bounding_box(*rit);
+					  glBegin(GL_TRIANGLES);
+					  // Vertex 1
+					  if (curr_string == 0 || curr_string == 3) { // Flat shaped
+						  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+					  }
+					  else if (curr_string == 1) {
+						  glNormal3f((*it)->v1->normal.x(), (*it)->v1->normal.y(), (*it)->v1->normal.z());
+					  }
+					  glVertex3f((*it)->v1->pos.x(),
+							  (*it)->v1->pos.y(),
+							  (*it)->v1->pos.z());
+
+					  // Vertex 2
+					  if (curr_string == 0 || curr_string == 3) { // Flat shaped
+						  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+					  }
+					  else if (curr_string == 1) {
+						  glNormal3f((*it)->v2->normal.x(), (*it)->v2->normal.y(), (*it)->v2->normal.z());
+					  }
+					  glVertex3f((*it)->v2->pos.x(),
+							  (*it)->v2->pos.y(),
+							  (*it)->v2->pos.z());
+
+					  // Vertex 3
+					  if (curr_string == 0 || curr_string == 3) { // Flat shaped
+						  glNormal3f((*it)->normal.x(), (*it)->normal.y(), (*it)->normal.z());
+					  }
+					  else if (curr_string == 1) {
+						  glNormal3f((*it)->v3->normal.x(), (*it)->v3->normal.y(), (*it)->v3->normal.z());
+					  }
+					  glVertex3f((*it)->v3->pos.x(),
+							  (*it)->v3->pos.y(),
+							  (*it)->v3->pos.z());
+
+					  glEnd();
+				  }
+///			  }
+		  }
+	  }
+*/
   }
 
   glEnable( GL_LIGHTING );
@@ -404,6 +455,11 @@ int main(int argc, char* argv[])
 {
   parser = new SMFParser();
   data = parser->load("ChairA.obj");
+  data1 = data;
+  data2 = parser->load("SimpleChair1.obj");
+  // mixer = new SimpleBox();
+  mixer = new EightPoints();
+  data = mixer->mix(data2, data1);
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);

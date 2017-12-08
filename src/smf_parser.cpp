@@ -17,12 +17,15 @@ Data* SMFParser::load(const std::string &filename)
 
 	bool size_parsed = false;
 	std::string line;
+	int p = 0;
 	int i = 0; // total vertex number
 	int j = 0;
 	int k = 0;
+	int partType;
 
 	float minDistance = 100.0;
 
+	Data::Part* currentPart = NULL;
 	Data::Region* currentRegion = new Data::Region();
 	Data::Region* previousRegion;
 
@@ -72,12 +75,25 @@ Data* SMFParser::load(const std::string &filename)
 			break;
 		case 'g':
 			currentRegion->id = k;
-			currentRegion->name = line.substr(2);
-			data->regions.push_back(currentRegion);
+			// currentRegion->name = line.substr(2);
+			iss >> currentRegion->name >> partType;
+			currentPart = data->findPartByType(static_cast<Data::Part::Type>(partType));
+			currentPart->regions.push_back(currentRegion);
+
+			for (int bi = 0; bi < 3; bi++) {
+				if (currentRegion->boundingBox.min()[bi] < currentPart->boundingBox.min()[bi]) {
+					currentPart->boundingBox.min()[bi] = currentRegion->boundingBox.min()[bi];
+				}
+
+				if (currentRegion->boundingBox.max()[bi] > currentPart->boundingBox.max()[bi]) {
+					currentPart->boundingBox.max()[bi] = currentRegion->boundingBox.max()[bi];
+				}
+			}
+
 			k++;
 			previousRegion = currentRegion;
 			currentRegion = new Data::Region();
-			std::cout << previousRegion->name << std::endl;
+			std::cout << partType << " " << previousRegion->name << std::endl;
 			break;
 		case 'f':
 			{
@@ -229,9 +245,11 @@ Data* SMFParser::load(const std::string &filename)
 	}
 	infile.close();
 	std::cout << "loadFile " << filename << std::endl;
-	for (int i = 0; i < data->regions.size(); i++) {
-		for (int j = 0; j < data->regions[i]->vertices.size(); j++) {
-			data->regions[i]->vertices[j]->calculateVertexNormal();
+	for (int i = 0; i < data->parts.size(); i++) {
+		for (int j = 0; j < data->parts[i]->regions.size(); j++) {
+			for (int k = 0; k < data->parts[i]->regions[j]->vertices.size(); k++) {
+				data->parts[i]->regions[j]->vertices[k]->calculateVertexNormal();
+			}
 		}
 	}
 

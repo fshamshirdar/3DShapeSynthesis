@@ -17,6 +17,32 @@ public:
 	class Vertex;
 	class W_edge;
 	class Face;
+	class Region;
+
+	/**
+	Class Part
+	*/
+	class Part {
+	public:
+		enum Type {
+			BACK_SHEET = 1,
+			SEAT_SHEET = 2,
+			LEFT_FRONT_LEG = 3,
+			LEFT_BACK_LEG = 4,
+			RIGHT_FRONT_LEG = 5,
+			RIGHT_BACK_LEG = 6,
+			FRONT_LEG_SPINDLE = 7,
+			LEFT_LEG_SPINDLE = 8,
+			RIGHT_LEG_SPINDLE = 9,
+			BACK_LEG_SPINDLE = 10,
+		};
+	public:
+		Part::Type	type;
+		Eigen::AlignedBox3f boundingBox;
+		std::vector<Data::Region*> regions;
+	public:
+		Part();
+	};
 
 	/**
 	Class Region
@@ -100,20 +126,26 @@ public:
 		float	cost;
 	};
 
-/////////////////
-/// Functions ///
-/////////////////
+	/////////////////
+	/// Functions ///
+	/////////////////
 public:
+	// Parts
+	Data::Part* findPartByType(Part::Type type);
+	void addPart(Data::Part* part);
+	void addParts(Data* data);
+	void replacePartByType(Data::Part* part);
+
 	Data::W_edge* findEdge(const Data::Region* region, const Data::Vertex* v1, const Data::Vertex* v2);
 	void findRegionsNeighborsByVertexToFaceDistance();
 	bool isPointWithinTriangle(Data::Face* face, Eigen::Vector3f P);
 	bool sameSide(Eigen::Vector3f p1, Eigen::Vector3f p2, Eigen::Vector3f A, Eigen::Vector3f B);
 
-/////////////////
-/// Variables ///
-/////////////////
+	/////////////////
+	/// Variables ///
+	/////////////////
 public:
-	std::vector<Data::Region*> regions;
+	std::vector<Data::Part*> parts;
 
 	int vertices_size;
 	int faces_size;

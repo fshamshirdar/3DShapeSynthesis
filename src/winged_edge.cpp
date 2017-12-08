@@ -1,5 +1,42 @@
 #include "data.h"
 
+Data::Part* Data::findPartByType(Data::Part::Type type)
+{
+	for (auto it = parts.begin() ; it != parts.end(); ++it) {
+		if ((*it)->type == type) {
+			return (*it);
+		}
+	}
+
+	Data::Part* part = new Data::Part();
+	part->type = type;
+
+	parts.push_back(part);
+
+	return part;
+}
+
+void Data::addPart(Data::Part* part)
+{
+	parts.push_back(part);
+}
+
+void Data::addParts(Data* data)
+{
+	for (auto it = data->parts.begin(); it != data->parts.end(); it++) {
+		parts.push_back((*it));
+	}
+}
+
+void Data::replacePartByType(Data::Part* part)
+{
+	for (int i=0; i < parts.size(); i++) {
+		if (parts[i]->type == part->type) {
+			parts[i] = part;
+		}
+	}
+}
+
 Data::W_edge* Data::findEdge(const Data::Region* region, const Data::Vertex* v1, const Data::Vertex* v2)
 {
 	for (int i = 0; i < region->edges.size(); i++) {
@@ -39,6 +76,7 @@ bool Data::sameSide(Eigen::Vector3f p1, Eigen::Vector3f p2, Eigen::Vector3f A, E
 	return (cp1.dot(cp2) >= 0);
 }
 
+/* TODO: need to add parts loop
 void Data::findRegionsNeighborsByVertexToFaceDistance() {
 	Data::Vertex* vertex;
 	Data::Face* face;
@@ -67,3 +105,4 @@ void Data::findRegionsNeighborsByVertexToFaceDistance() {
 		}
 	}
 }
+*/

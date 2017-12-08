@@ -1,6 +1,6 @@
 #include "data.h"
 
-Data::Region::Region()
+Data::Part::Part()
 {
 	Eigen::Vector3f min, max;
 	min << 100.0, 100.0, 100.0;
