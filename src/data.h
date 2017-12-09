@@ -18,7 +18,7 @@ public:
 	class W_edge;
 	class Face;
 	class Region;
-	class PartInterSection;
+	class PartIntersection;
 
 	/**
 	Class Part
@@ -46,6 +46,7 @@ public:
 		Part();
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
+		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex);
 	};
 
 	/**
@@ -53,9 +54,13 @@ public:
 	*/
 	class PartIntersection {
 	public:
-		Eigen::AlignedBox3f			boundingBox;
-		std::vector<Data::Part*>		neighbor;
-		std::vector<Data::Vertex*>		vertices;
+		Eigen::AlignedBox3f		boundingBox;
+		Data::Part*			neighbor;
+		std::vector<Data::Vertex*>	vertices;
+	public:
+		PartIntersection();
+		void resetBoundingBox();
+		void recalculateBoundingBox(Data::Vertex* vertex);
 	};
 
 	/**
@@ -153,7 +158,9 @@ public:
 	void replacePartByType(Data::Part* part);
 
 	Data::W_edge* findEdge(const Data::Region* region, const Data::Vertex* v1, const Data::Vertex* v2);
-	void findRegionsNeighborsByVertexToFaceDistance();
+	void findPartsNeighborsByVertexToFaceDistance();
+	void findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::Part* part2);
+	void findPartsNeighborsByVertexToFaceDistanceForPart(Data::Part* part);
 	bool isPointWithinTriangle(Data::Face* face, Eigen::Vector3f P);
 	bool sameSide(Eigen::Vector3f p1, Eigen::Vector3f p2, Eigen::Vector3f A, Eigen::Vector3f B);
 

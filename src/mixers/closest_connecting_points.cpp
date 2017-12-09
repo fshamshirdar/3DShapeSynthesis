@@ -1,31 +1,49 @@
 #include "mix_match.h"
-#include "mixers/eight_points.h"
+#include "mixers/closest_connecting_points.h"
 #include <set>
 
 #include <iostream>
 
-#define SCALE_BOUNDING_BOX true
+#define SCALE_BOUNDING_BOX false
 #define K_NEAREST_NEIGHBORS 8
 
-Data* EightPoints::mix(Data* chair1, Data* chair2)
+Data* ClosestConnectingPoints::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
 	Data::Part* target = chair1->findPartByType(Data::Part::BACK_SHEET);
+	chair1->findPartsNeighborsByVertexToFaceDistanceForPart(target);
+
 	Data::Part* ref = chair2->findPartByType(Data::Part::BACK_SHEET);
+	chair2->findPartsNeighborsByVertexToFaceDistanceForPart(ref);
 
 	if (SCALE_BOUNDING_BOX) {
 		scaleBoundingBox(ref, target);
 	}
 
-	Data::Vertex** refPoints = find8Points(ref);
-	Data::Vertex** targetPoints = find8Points(target);
+	std::vector<ClosestConnectingPoints::ClosestVertexPair*> controlPoints;
 
-	Eigen::Vector4f translations[8];
-	for (int i=0; i<8; i++) {
-		translations[i] = targetPoints[i]->pos - refPoints[i]->pos;
+	for (auto rnit = ref->neighbors.begin(); rnit != ref->neighbors.end(); rnit++) {
+		for (auto tnit = target->neighbors.begin(); tnit != target->neighbors.end(); tnit++) {
+			for (auto vrnit = (*rnit)->vertices.begin(); vrnit != (*rnit)->vertices.end(); vrnit++) {
+				Data::Vertex* closestVertex = *((*tnit)->vertices.begin());
+				float minDist = ((*vrnit)->pos - closestVertex->pos).norm();
+				for (auto vtnit = (*tnit)->vertices.begin(); vtnit != (*tnit)->vertices.end(); vtnit++) {
+					float dist = ((*vrnit)->pos - (*vtnit)->pos).norm();
+					if (dist < minDist) {
+						minDist = dist;
+						closestVertex = (*vtnit);
+					}
+				}
+				ClosestConnectingPoints::ClosestVertexPair* pair = new ClosestConnectingPoints::ClosestVertexPair;
+				pair->translation = (closestVertex->pos - (*vrnit)->pos);
+				pair->vertex = (*vrnit);
+				pair->pair = closestVertex;
+				pair->dist = minDist;
+				controlPoints.push_back(pair);
+				std::cout << pair->vertex->pos << std::endl;
+			}
+		}
 	}
-
-	float dists[8], sum;
 
 	ref->resetBoundingBox();
 	for (auto rit = ref->regions.begin(); rit != ref->regions.end(); rit++) {
@@ -33,31 +51,30 @@ Data* EightPoints::mix(Data* chair1, Data* chair2)
 		region->resetBoundingBox();
 		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
 			Data::Vertex* vertex = (*vit);
-			sum = 0.;
+			float sum = 0.;
 
-			std::set<VertexDist> icp;
+			std::set<ClosestConnectingPoints::VertexDist> kClosestPoints;
 
-			for (int i=0; i<8; i++) {
-				dists[i] = (vertex->pos - targetPoints[i]->pos).norm();
-				sum += dists[i];
-
-				EightPoints::VertexDist vd;
-				vd.translation = translations[i];
-				vd.vertex = targetPoints[i];
-				vd.dist = dists[i];
-				icp.insert(vd);
+			for (auto cpit=controlPoints.begin(); cpit != controlPoints.end(); cpit++) {
+				ClosestConnectingPoints::VertexDist vd;
+				vd.translation = (*cpit)->translation;
+				vd.vertex = (*cpit)->vertex;
+				vd.dist = (vertex->pos - (*cpit)->vertex->pos).norm();
+				kClosestPoints.insert(vd);
 			}
+
+			std::cout << controlPoints.size() << " " << kClosestPoints.size() << std::endl;
 
 			Eigen::Vector4f translation = Eigen::Vector4f::Zero();
 
-			auto it = icp.begin();
+			auto it = kClosestPoints.begin();
 			for (int i=0; i<K_NEAREST_NEIGHBORS; i++, it++) {
 				sum += it->dist;
 			}
 
- 			it = icp.begin();
-			for (int i=0; i<K_NEAREST_NEIGHBORS; i++, it++) { // three closest base points
-				translation += ((sum-it->dist) / ((K_NEAREST_NEIGHBORS-1)*sum)) * it->translation;
+ 			it = kClosestPoints.begin();
+			for (int i=0; i<K_NEAREST_NEIGHBORS && it != kClosestPoints.end(); i++, it++) { // three closest base points
+				translation += ((sum - it->dist) / ((K_NEAREST_NEIGHBORS-1)*sum)) * it->translation;
 			}
 			vertex->pos += translation;
 			vertex->pos[3] = 1;
@@ -72,7 +89,7 @@ Data* EightPoints::mix(Data* chair1, Data* chair2)
 	return output;
 }
 
-Data::Vertex** EightPoints::find8Points(Data::Part* part)
+Data::Vertex** ClosestConnectingPoints::find8Points(Data::Part* part)
 {
 	Eigen::AlignedBox3f boundingBox = part->boundingBox;
 

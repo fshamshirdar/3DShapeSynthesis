@@ -1,4 +1,5 @@
 #include "data.h"
+#include <iostream>
 
 Data::Part* Data::findPartByType(Data::Part::Type type)
 {
@@ -78,18 +79,29 @@ bool Data::sameSide(Eigen::Vector3f p1, Eigen::Vector3f p2, Eigen::Vector3f A, E
 
 void Data::findPartsNeighborsByVertexToFaceDistance()
 {
-	Data::Vertex* vertex;
-	Data::Face* face;
 	for (auto p1it = parts.begin(); p1it != parts.end(); p1it++) {
 		for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
-			
+			if ((*p1it) != (*p2it)) {
+				findRegionsNeighborsByVertexToFaceDistance(*p1it, *p2it);
+			}
 		}
+	}
+}
 
+void Data::findPartsNeighborsByVertexToFaceDistanceForPart(Data::Part* part)
+{
+	for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
+		if (part != (*p2it)) {
+			findRegionsNeighborsByVertexToFaceDistance(part, *p2it);
+			findRegionsNeighborsByVertexToFaceDistance(*p2it, part);
+		}
 	}
 }
 
 void Data::findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::Part* part2)
 {
+	Data::Vertex* vertex;
+	Data::Face* face;
 	for (int i = 0; i < part1->regions.size(); i++) {
 		for (int j = 0; j < part2->regions.size(); j++) {
 			for (int k = 0; k < part1->regions[i]->vertices.size(); k++) {
@@ -100,15 +112,12 @@ void Data::findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::P
 					Eigen::Vector4f point = vertex->pos - (dist * face->normal);
 					Eigen::Vector3f point3 = point.head<3>();
 					if (isPointWithinTriangle(face, point3)) {
-						if (fabs(dist) < 0.001) {
-						//	regions[i]->neighbors.push_back(regions[j]);
-						//	regions[j]->neighbors.push_back(regions[i]);
+						if (fabs(dist) < 0.01) {
+							part1->addVertexToPartIntersection(part2, vertex);
+							part2->addVertexToPartIntersection(part1, vertex);
 
-							part1->neighbors.push_back();
-							part2->neighbors.push_back();
-
-							l = regions[j]->faces.size();
-							k = regions[i]->faces.size();
+							l = part2->regions[j]->faces.size();
+							// k = part1->regions[i]->vertices.size();
 						}
 					}
 				}

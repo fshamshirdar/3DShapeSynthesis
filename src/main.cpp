@@ -5,6 +5,7 @@
 #include "mix_match.h"
 #include "mixers/simple_box.h"
 #include "mixers/eight_points.h"
+#include "mixers/closest_connecting_points.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -265,7 +266,7 @@ void draw_bounding_box(const Eigen::AlignedBox3f& boundingBox, const GLfloat* co
 	Eigen::Vector3f topRightCeil = boundingBox.corner(Eigen::AlignedBox3f::TopRightCeil);
 
 	glColor3fv(color);
-	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
+	glVertex3fv(bottomLeftFloor.data());
 	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
 
 	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
@@ -340,6 +341,10 @@ void myGlutDisplay()
 	  }
 
 	  for(auto pit = data->parts.begin(); pit != data->parts.end(); pit++) {
+		  GLfloat ncolor[3] = {0.0, 0.0, 1.0};
+		  for (auto nit = (*pit)->neighbors.begin(); nit != (*pit)->neighbors.end(); nit++) {
+			  draw_bounding_box((*nit)->boundingBox, ncolor);
+		  }
 		  GLfloat pcolor[3] = {0.0, 1.0, 0.0};
 		  draw_bounding_box((*pit)->boundingBox, pcolor);
 		  for(auto rit = (*pit)->regions.begin(); rit != (*pit)->regions.end(); rit++) {
@@ -457,9 +462,10 @@ int main(int argc, char* argv[])
   data = parser->load("ChairA.obj");
   data1 = data;
   data2 = parser->load("SimpleChair1.obj");
+
   // mixer = new SimpleBox();
-  mixer = new EightPoints();
-  data = mixer->mix(data2, data1);
+  mixer = new ClosestConnectingPoints();
+  data = mixer->mix(data1, data2);
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);

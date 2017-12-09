@@ -1,11 +1,11 @@
 #include "data.h"
 
-Data::Part::Part()
+Data::PartIntersection::PartIntersection()
 {
 	resetBoundingBox();
 }
 
-void Data::Part::resetBoundingBox()
+void Data::PartIntersection::resetBoundingBox()
 {
 	Eigen::Vector3f min, max;
 	min << 100.0, 100.0, 100.0;
@@ -13,7 +13,7 @@ void Data::Part::resetBoundingBox()
 	boundingBox = Eigen::AlignedBox3f(min, max);
 }
 
-void Data::Part::recalculateBoundingBox(Data::Vertex* vertex)
+void Data::PartIntersection::recalculateBoundingBox(Data::Vertex* vertex)
 {
 	if (vertex->pos[0] < boundingBox.min()[0]) {
 		boundingBox.min()[0] = vertex->pos[0];
@@ -35,20 +35,3 @@ void Data::Part::recalculateBoundingBox(Data::Vertex* vertex)
 	}
 }
 
-void Data::Part::addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex)
-{
-	for (auto it = neighbors.begin(); it != neighbors.end(); it++) {
-		if ((*it)->neighbor == part) {
-			(*it)->vertices.push_back(vertex);
-			(*it)->recalculateBoundingBox(vertex);
-			return;
-		}
-	}
-
-	Data::PartIntersection* partIntersection = new Data::PartIntersection();
-	partIntersection->neighbor = part;
-	partIntersection->vertices.push_back(vertex);
-	partIntersection->recalculateBoundingBox(vertex);
-
-	neighbors.push_back(partIntersection);
-}
