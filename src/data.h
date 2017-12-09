@@ -44,6 +44,11 @@ public:
 		std::vector<Data::PartIntersection*>	neighbors;
 	public:
 		Part();
+		void scale(Eigen::Vector3f scale, Eigen::Vector3f base);
+		void scale(Eigen::Vector3f scale);
+		void scale(Eigen::AlignedBox3f box, Eigen::Vector3f base);
+		void scale(Eigen::AlignedBox3f box);
+		void transform(Eigen::Vector3f transform);
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
 		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex);

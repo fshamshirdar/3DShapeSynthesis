@@ -10,15 +10,16 @@
 Data* ClosestConnectingPoints::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
-	Data::Part* target = chair1->findPartByType(Data::Part::BACK_SHEET);
-	chair1->findPartsNeighborsByVertexToFaceDistanceForPart(target);
-
-	Data::Part* ref = chair2->findPartByType(Data::Part::BACK_SHEET);
-	chair2->findPartsNeighborsByVertexToFaceDistanceForPart(ref);
+	Data::Part* target = chair1->findPartByType(Data::Part::SEAT_SHEET);
+	Data::Part* ref = chair2->findPartByType(Data::Part::SEAT_SHEET);
 
 	if (SCALE_BOUNDING_BOX) {
-		scaleBoundingBox(ref, target);
+		Eigen::Vector3f baseScale = (target->boundingBox.min() + target->boundingBox.max()) / 2.;
+		ref->scale(target->boundingBox, baseScale);
 	}
+
+	chair1->findPartsNeighborsByVertexToFaceDistanceForPart(target);
+	chair2->findPartsNeighborsByVertexToFaceDistanceForPart(ref);
 
 	std::vector<ClosestConnectingPoints::ClosestVertexPair*> controlPoints;
 
@@ -52,29 +53,31 @@ Data* ClosestConnectingPoints::mix(Data* chair1, Data* chair2)
 			Data::Vertex* vertex = (*vit);
 			float sum = 0.;
 
-			std::set<ClosestConnectingPoints::VertexDist> kClosestPoints;
+			std::vector<ClosestConnectingPoints::VertexDist> kClosestPoints;
+			kClosestPoints.reserve(controlPoints.size());
 
 			for (auto cpit=controlPoints.begin(); cpit != controlPoints.end(); cpit++) {
 				ClosestConnectingPoints::VertexDist vd;
 				vd.translation = (*cpit)->translation;
 				vd.vertex = (*cpit)->vertex;
 				vd.dist = (vertex->pos - (*cpit)->vertex->pos).norm();
-				kClosestPoints.insert(vd);
-				std::cout << (vd.vertex) << std::endl;
+				kClosestPoints.push_back(vd);
 			}
 
-			std::cout << controlPoints.size() << " " << kClosestPoints.size() << std::endl;
+			std::sort(kClosestPoints.begin(), kClosestPoints.end());
 
 			Eigen::Vector4f translation = Eigen::Vector4f::Zero();
 
+			int len = 0;
 			auto it = kClosestPoints.begin();
-			for (int i=0; i<K_NEAREST_NEIGHBORS; i++, it++) {
+			for (int i=0; i<K_NEAREST_NEIGHBORS && it != kClosestPoints.end(); i++, it++) {
 				sum += it->dist;
+				len ++;
 			}
 
  			it = kClosestPoints.begin();
-			for (int i=0; i<K_NEAREST_NEIGHBORS && it != kClosestPoints.end(); i++, it++) { // three closest base points
-				translation += ((sum - it->dist) / ((K_NEAREST_NEIGHBORS-1)*sum)) * it->translation;
+			for (int i=0; i<len && it != kClosestPoints.end(); i++, it++) { // three closest base points
+				translation += ((sum - it->dist) / ((len-1)*sum)) * it->translation;
 			}
 			vertex->pos += translation;
 			vertex->pos[3] = 1;

@@ -37,6 +37,72 @@ void Data::Part::recalculateBoundingBox(Data::Vertex* vertex)
 	}
 }
 
+void Data::Part::scale(Eigen::Vector3f scale, Eigen::Vector3f base)
+{
+	resetBoundingBox();
+	for (auto rit = regions.begin(); rit != regions.end(); rit++) {
+		Data::Region* region = (*rit);
+		region->resetBoundingBox();
+		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
+			Data::Vertex* vertex = (*vit);
+			
+			vertex->pos[0] = (vertex->pos[0] - base[0]) * scale[0] + base[0];
+			vertex->pos[1] = (vertex->pos[1] - base[1]) * scale[1] + base[1];
+			vertex->pos[2] = (vertex->pos[2] - base[2]) * scale[2] + base[2];
+			vertex->pos[3] = 1;
+
+			region->recalculateBoundingBox(vertex);
+			recalculateBoundingBox(vertex);
+		}
+	}
+}
+
+void Data::Part::scale(Eigen::Vector3f scale)
+{
+	Eigen::Vector3f base = boundingBox.min(); // min point on the corner
+	// base = (boundingBox.min() + boundingBox.max()) / 2.;
+	// base[2] = boundingBox.min()[2];
+	return this->scale(scale, base);
+}
+
+void Data::Part::scale(Eigen::AlignedBox3f box, Eigen::Vector3f base)
+{
+	Eigen::Vector3f to = (box.max() - box.min());
+	Eigen::Vector3f from = (boundingBox.max() - boundingBox.min());
+	Eigen::Vector3f scale;
+	scale[0] = to[0] / from[0];
+	scale[1] = to[1] / from[1];
+	scale[2] = to[2] / from[2];
+	this->scale(scale, base);
+}
+
+
+void Data::Part::scale(Eigen::AlignedBox3f box)
+{
+	Eigen::Vector3f base = boundingBox.min(); // min point on the corner
+	this->scale(box, base);
+}
+
+void Data::Part::transform(Eigen::Vector3f transform)
+{
+	resetBoundingBox();
+	for (auto rit = regions.begin(); rit != regions.end(); rit++) {
+		Data::Region* region = (*rit);
+		region->resetBoundingBox();
+		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
+			Data::Vertex* vertex = (*vit);
+			
+			vertex->pos[0] = (vertex->pos[0] + transform[0]);
+			vertex->pos[1] = (vertex->pos[1] + transform[1]);
+			vertex->pos[2] = (vertex->pos[2] + transform[2]);
+			vertex->pos[3] = 1;
+
+			region->recalculateBoundingBox(vertex);
+			recalculateBoundingBox(vertex);
+		}
+	}
+}
+
 void Data::Part::addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex)
 {
 	for (auto it = neighbors.begin(); it != neighbors.end(); it++) {

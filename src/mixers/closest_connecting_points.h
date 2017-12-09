@@ -2,6 +2,7 @@
 
 #include "data.h"
 #include "mix_match.h"
+#include <iostream>
 
 class ClosestConnectingPoints: public MixMatch {
 public:
