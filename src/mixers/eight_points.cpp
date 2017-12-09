@@ -14,7 +14,7 @@ Data* EightPoints::mix(Data* chair1, Data* chair2)
 	Data::Part* ref = chair2->findPartByType(Data::Part::SEAT_SHEET);
 
 	if (SCALE_BOUNDING_BOX) {
-		fitBoundingBox(ref, target);
+		scaleBoundingBox(ref, target);
 	}
 
 	Data::Vertex** refPoints = find8Points(ref);
@@ -27,8 +27,10 @@ Data* EightPoints::mix(Data* chair1, Data* chair2)
 
 	float dists[8], sum;
 
+	ref->resetBoundingBox();
 	for (auto rit = ref->regions.begin(); rit != ref->regions.end(); rit++) {
 		Data::Region* region = (*rit);
+		region->resetBoundingBox();
 		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
 			Data::Vertex* vertex = (*vit);
 			sum = 0.;
@@ -59,6 +61,9 @@ Data* EightPoints::mix(Data* chair1, Data* chair2)
 			}
 			vertex->pos += translation;
 			vertex->pos[3] = 1;
+
+			ref->recalculateBoundingBox(vertex);
+			region->recalculateBoundingBox(vertex);
 		}
 	}
 

@@ -1,6 +1,6 @@
 #include "mix_match.h"
 
-void MixMatch::fitBoundingBox(Data::Part* from, Data::Part* to)
+void MixMatch::scaleBoundingBox(Data::Part* from, Data::Part* to)
 {
 	Eigen::Vector3f fromMin = from->boundingBox.min();
 	Eigen::Vector3f toMin = to->boundingBox.min();
