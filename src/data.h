@@ -18,6 +18,7 @@ public:
 	class W_edge;
 	class Face;
 	class Region;
+	class PartInterSection;
 
 	/**
 	Class Part
@@ -37,9 +38,10 @@ public:
 			BACK_LEG_SPINDLE = 10,
 		};
 	public:
-		Part::Type	type;
-		Eigen::AlignedBox3f boundingBox;
-		std::vector<Data::Region*> regions;
+		Part::Type				type;
+		Eigen::AlignedBox3f			boundingBox;
+		std::vector<Data::Region*>		regions;
+		std::vector<Data::PartIntersection*>	neighbors;
 	public:
 		Part();
 		void resetBoundingBox();
@@ -47,19 +49,29 @@ public:
 	};
 
 	/**
+	Class PartIntersection
+	*/
+	class PartIntersection {
+	public:
+		Eigen::AlignedBox3f			boundingBox;
+		std::vector<Data::Part*>		neighbor;
+		std::vector<Data::Vertex*>		vertices;
+	};
+
+	/**
 	Class Region
 	*/
 	class Region {
 	public:
-		int		id;
-		std::string	name;
-		std::vector<Data::Vertex*> vertices; // dynamic array
-		std::vector<Data::Face*> faces;  // dynamic array
-		std::vector<Data::W_edge*> edges;
+		int				id;
+		std::string			name;
+		std::vector<Data::Vertex*>	vertices; // dynamic array
+		std::vector<Data::Face*>	faces;  // dynamic array
+		std::vector<Data::W_edge*>	edges;
 
-		Eigen::AlignedBox3f boundingBox;
+		Eigen::AlignedBox3f		boundingBox;
 
-		std::vector<Data::Region*> neighbors;
+		std::vector<Data::Region*>	neighbors;
 	public:
 		Region();
 		void resetBoundingBox();

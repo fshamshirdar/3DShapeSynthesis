@@ -76,28 +76,39 @@ bool Data::sameSide(Eigen::Vector3f p1, Eigen::Vector3f p2, Eigen::Vector3f A, E
 	return (cp1.dot(cp2) >= 0);
 }
 
-/* TODO: need to add parts loop
-void Data::findRegionsNeighborsByVertexToFaceDistance() {
+void Data::findPartsNeighborsByVertexToFaceDistance()
+{
 	Data::Vertex* vertex;
 	Data::Face* face;
-	for (int i = 0; i < regions.size(); i++) {
-		for (int j = 0; j < regions.size(); j++) {
-			if (i != j && std::find(regions[i]->neighbors.begin(), regions[i]->neighbors.end(), regions[j]) == regions[i]->neighbors.end()) {
-				for (int k = 0; k < regions[i]->vertices.size(); k++) {
-					vertex = regions[i]->vertices[k];
-					for (int l = 0; l < regions[j]->faces.size(); l++) {
-						face = regions[j]->faces[l];
-						float dist = (vertex->pos - face->v1->pos).dot(face->normal);
-						Eigen::Vector4f point = vertex->pos - (dist * face->normal);
-						Eigen::Vector3f point3 = point.head<3>();
-						if (isPointWithinTriangle(face, point3)) {
-							if (fabs(dist) < 0.001) {
-								regions[i]->neighbors.push_back(regions[j]);
-								regions[j]->neighbors.push_back(regions[i]);
+	for (auto p1it = parts.begin(); p1it != parts.end(); p1it++) {
+		for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
+			
+		}
 
-								l = regions[j]->faces.size();
-								k = regions[i]->faces.size();
-							}
+	}
+}
+
+void Data::findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::Part* part2)
+{
+	for (int i = 0; i < part1->regions.size(); i++) {
+		for (int j = 0; j < part2->regions.size(); j++) {
+			for (int k = 0; k < part1->regions[i]->vertices.size(); k++) {
+				vertex = part1->regions[i]->vertices[k];
+				for (int l = 0; l < part2->regions[j]->faces.size(); l++) {
+					face = part2->regions[j]->faces[l];
+					float dist = (vertex->pos - face->v1->pos).dot(face->normal);
+					Eigen::Vector4f point = vertex->pos - (dist * face->normal);
+					Eigen::Vector3f point3 = point.head<3>();
+					if (isPointWithinTriangle(face, point3)) {
+						if (fabs(dist) < 0.001) {
+						//	regions[i]->neighbors.push_back(regions[j]);
+						//	regions[j]->neighbors.push_back(regions[i]);
+
+							part1->neighbors.push_back();
+							part2->neighbors.push_back();
+
+							l = regions[j]->faces.size();
+							k = regions[i]->faces.size();
 						}
 					}
 				}
@@ -105,4 +116,3 @@ void Data::findRegionsNeighborsByVertexToFaceDistance() {
 		}
 	}
 }
-*/

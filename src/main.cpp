@@ -457,8 +457,8 @@ int main(int argc, char* argv[])
   data = parser->load("ChairA.obj");
   data1 = data;
   data2 = parser->load("SimpleChair1.obj");
-  mixer = new SimpleBox();
-  // mixer = new EightPoints();
+  // mixer = new SimpleBox();
+  mixer = new EightPoints();
   data = mixer->mix(data2, data1);
 
   glutInit(&argc, argv);
