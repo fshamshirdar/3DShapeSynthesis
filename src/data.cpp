@@ -103,21 +103,22 @@ void Data::findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::P
 	Data::Vertex* vertex;
 	Data::Face* face;
 	for (int i = 0; i < part1->regions.size(); i++) {
-		for (int j = 0; j < part2->regions.size(); j++) {
-			for (int k = 0; k < part1->regions[i]->vertices.size(); k++) {
-				vertex = part1->regions[i]->vertices[k];
+		for (int k = 0; k < part1->regions[i]->vertices.size(); k++) {
+			vertex = part1->regions[i]->vertices[k];
+			for (int j = 0; j < part2->regions.size(); j++) {
 				for (int l = 0; l < part2->regions[j]->faces.size(); l++) {
 					face = part2->regions[j]->faces[l];
 					float dist = (vertex->pos - face->v1->pos).dot(face->normal);
 					Eigen::Vector4f point = vertex->pos - (dist * face->normal);
 					Eigen::Vector3f point3 = point.head<3>();
 					if (isPointWithinTriangle(face, point3)) {
-						if (fabs(dist) < 0.01) {
+						if (fabs(dist) < 0.005) {
 							part1->addVertexToPartIntersection(part2, vertex);
 							part2->addVertexToPartIntersection(part1, vertex);
 
-							l = part2->regions[j]->faces.size();
-							// k = part1->regions[i]->vertices.size();
+							// l = part2->regions[j]->faces.size();
+							j = part2->regions.size();
+							break;
 						}
 					}
 				}

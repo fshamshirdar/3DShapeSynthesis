@@ -23,10 +23,10 @@ Data* ClosestConnectingPoints::mix(Data* chair1, Data* chair2)
 	std::vector<ClosestConnectingPoints::ClosestVertexPair*> controlPoints;
 
 	for (auto rnit = ref->neighbors.begin(); rnit != ref->neighbors.end(); rnit++) {
-		for (auto tnit = target->neighbors.begin(); tnit != target->neighbors.end(); tnit++) {
-			for (auto vrnit = (*rnit)->vertices.begin(); vrnit != (*rnit)->vertices.end(); vrnit++) {
-				Data::Vertex* closestVertex = *((*tnit)->vertices.begin());
-				float minDist = ((*vrnit)->pos - closestVertex->pos).norm();
+		for (auto vrnit = (*rnit)->vertices.begin(); vrnit != (*rnit)->vertices.end(); vrnit++) {
+			Data::Vertex* closestVertex = NULL;
+			float minDist = 1000.0;
+			for (auto tnit = target->neighbors.begin(); tnit != target->neighbors.end(); tnit++) {
 				for (auto vtnit = (*tnit)->vertices.begin(); vtnit != (*tnit)->vertices.end(); vtnit++) {
 					float dist = ((*vrnit)->pos - (*vtnit)->pos).norm();
 					if (dist < minDist) {
@@ -34,14 +34,13 @@ Data* ClosestConnectingPoints::mix(Data* chair1, Data* chair2)
 						closestVertex = (*vtnit);
 					}
 				}
-				ClosestConnectingPoints::ClosestVertexPair* pair = new ClosestConnectingPoints::ClosestVertexPair;
-				pair->translation = (closestVertex->pos - (*vrnit)->pos);
-				pair->vertex = (*vrnit);
-				pair->pair = closestVertex;
-				pair->dist = minDist;
-				controlPoints.push_back(pair);
-				std::cout << pair->vertex->pos << std::endl;
 			}
+			ClosestConnectingPoints::ClosestVertexPair* pair = new ClosestConnectingPoints::ClosestVertexPair;
+			pair->translation = (closestVertex->pos - (*vrnit)->pos);
+			pair->vertex = (*vrnit);
+			pair->pair = closestVertex;
+			pair->dist = minDist;
+			controlPoints.push_back(pair);
 		}
 	}
 
@@ -61,6 +60,7 @@ Data* ClosestConnectingPoints::mix(Data* chair1, Data* chair2)
 				vd.vertex = (*cpit)->vertex;
 				vd.dist = (vertex->pos - (*cpit)->vertex->pos).norm();
 				kClosestPoints.insert(vd);
+				std::cout << (vd.vertex) << std::endl;
 			}
 
 			std::cout << controlPoints.size() << " " << kClosestPoints.size() << std::endl;

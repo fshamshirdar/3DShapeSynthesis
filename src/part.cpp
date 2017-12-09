@@ -1,4 +1,6 @@
 #include "data.h"
+#include <iostream>
+#include <algorithm>
 
 Data::Part::Part()
 {

@@ -23,11 +23,11 @@ public:
 		Data::Vertex* vertex;
 		float dist;
 
-		bool operator< (const struct VertexDist& vd) const {
+		bool operator< (const VertexDist& vd) const {
 			return dist < vd.dist;
 		}
 
-		bool operator==(const struct VertexDist& vd) const
+		bool operator==(const VertexDist& vd) const
 		{
 			return (vertex == vd.vertex);
 		}
