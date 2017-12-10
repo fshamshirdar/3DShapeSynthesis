@@ -126,3 +126,60 @@ void Data::findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::P
 		}
 	}
 }
+
+void Data::findPartsNeighborsByBoxIntersection()
+{
+	for (auto p1it = parts.begin(); p1it != parts.end(); p1it++) {
+		for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
+			if ((*p1it) != (*p2it)) {
+				findRegionsNeighborsByBoxIntersection(*p1it, *p2it);
+			}
+		}
+	}
+}
+
+void Data::findPartsNeighborsByBoxIntersectionForPart(Data::Part* part)
+{
+	for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
+		if (part != (*p2it)) {
+			findRegionsNeighborsByBoxIntersection(part, *p2it);
+			findRegionsNeighborsByBoxIntersection(*p2it, part);
+		}
+	}
+}
+
+void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* part2)
+{
+	float scale = 1.;
+	Eigen::Vector3f translation;
+	translation << .005, .005, .005;
+
+	Eigen::AlignedBox3f intersection = part1->boundingBox.intersection(part2->boundingBox);
+	Eigen::Vector3f min = intersection.min();
+	Eigen::Vector3f max = intersection.max();
+	Eigen::Vector3f mid = (max + min) / 2.;
+	Eigen::Vector3f newMin = (min - mid) * scale + mid;
+	Eigen::Vector3f newMax = (max - mid) * scale + mid;
+	newMin = (newMin - mid) - translation + mid;
+	newMax = (newMax - mid) + translation + mid;
+	intersection = Eigen::AlignedBox3f(newMin, newMax);
+
+	for (auto r1it = part1->regions.begin(); r1it != part1->regions.end(); r1it++) {
+		for (auto r1vit = (*r1it)->vertices.begin(); r1vit != (*r1it)->vertices.end(); r1vit++) {
+			Eigen::Vector3f pos = (*r1vit)->pos.head<3>();
+			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
+			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
+				part1->addVertexToPartIntersection(part2, (*r1vit));
+			}
+		}
+	}
+	for (auto r2it = part2->regions.begin(); r2it != part2->regions.end(); r2it++) {
+		for (auto r2vit = (*r2it)->vertices.begin(); r2vit != (*r2it)->vertices.end(); r2vit++) {
+			Eigen::Vector3f pos = (*r2vit)->pos.head<3>();
+			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
+			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
+				part2->addVertexToPartIntersection(part1, (*r2vit));
+			}
+		}
+	}
+}

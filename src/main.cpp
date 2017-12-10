@@ -6,6 +6,8 @@
 #include "mixers/simple_box.h"
 #include "mixers/eight_points.h"
 #include "mixers/closest_connecting_points.h"
+#include "mixers/hull_grid_points.h"
+#include "mixers/box_intersection_points.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -52,6 +54,7 @@ Data		*data = NULL;
 Data		*data1 = NULL;
 Data		*data2 = NULL;
 MixMatch	*mixer = NULL;
+std::vector<Data::Vertex*> controlPoints;
 
 /********** User IDs for callbacks ********/
 #define OPEN_ID              100
@@ -247,6 +250,25 @@ void draw_axes(float scale)
   glEnable(GL_LIGHTING);
 }
 
+void draw_control_points(std::vector<Data::Vertex*> points, const GLfloat* color)
+{
+	glDisable( GL_LIGHTING );
+
+	glPushMatrix();
+	glScalef( scale, scale, scale );
+
+	glPointSize(10);
+	glBegin(GL_POINTS);
+	for (auto it=points.begin(); it != points.end(); it++) {
+		glVertex3fv((*it)->pos.head<3>().data());
+	}
+	glEnd();
+
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING);
+}
+
 void draw_bounding_box(const Eigen::AlignedBox3f& boundingBox, const GLfloat* color)
 {
 	glDisable( GL_LIGHTING );
@@ -267,40 +289,40 @@ void draw_bounding_box(const Eigen::AlignedBox3f& boundingBox, const GLfloat* co
 
 	glColor3fv(color);
 	glVertex3fv(bottomLeftFloor.data());
-	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
+	glVertex3fv(bottomRightFloor.data());
 
-	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
-	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
+	glVertex3fv(bottomLeftFloor.data());
+	glVertex3fv(topLeftFloor.data());
 
-	glVertex3f(bottomLeftFloor[0], bottomLeftFloor[1], bottomLeftFloor[2]);
-	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
+	glVertex3fv(bottomLeftFloor.data());
+	glVertex3fv(bottomLeftCeil.data());
 
-	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
-	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
+	glVertex3fv(bottomRightFloor.data());
+	glVertex3fv(topRightFloor.data());
 
-	glVertex3f(bottomRightFloor[0], bottomRightFloor[1], bottomRightFloor[2]);
-	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
+	glVertex3fv(bottomRightFloor.data());
+	glVertex3fv(bottomRightCeil.data());
 
-	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
-	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
+	glVertex3fv(topLeftFloor.data());
+	glVertex3fv(topRightFloor.data());
 
-	glVertex3f(topLeftFloor[0], topLeftFloor[1], topLeftFloor[2]);
-	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
+	glVertex3fv(topLeftFloor.data());
+	glVertex3fv(topLeftCeil.data());
 
-	glVertex3f(topRightFloor[0], topRightFloor[1], topRightFloor[2]);
-	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
+	glVertex3fv(topRightFloor.data());
+	glVertex3fv(topRightCeil.data());
 
-	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
-	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
+	glVertex3fv(topRightCeil.data());
+	glVertex3fv(topLeftCeil.data());
 
-	glVertex3f(topRightCeil[0], topRightCeil[1], topRightCeil[2]);
-	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
+	glVertex3fv(topRightCeil.data());
+	glVertex3fv(bottomRightCeil.data());
 
-	glVertex3f(bottomRightCeil[0], bottomRightCeil[1], bottomRightCeil[2]);
-	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
+	glVertex3fv(bottomRightCeil.data());
+	glVertex3fv(bottomLeftCeil.data());
 
-	glVertex3f(topLeftCeil[0], topLeftCeil[1], topLeftCeil[2]);
-	glVertex3f(bottomLeftCeil[0], bottomLeftCeil[1], bottomLeftCeil[2]);
+	glVertex3fv(topLeftCeil.data());
+	glVertex3fv(bottomLeftCeil.data());
 
 	glEnd();
 
@@ -333,6 +355,9 @@ void myGlutDisplay()
   glScalef(scale, scale, scale);
 
   if (data != NULL) {
+	  GLfloat cpcolor[3] = {1.0, 1.0, 0.0};
+  	  draw_control_points(controlPoints, cpcolor);
+
 	  draw_axes(.52f);
 	  if (curr_string == 2 || curr_string == 3) { // Wireframe
 		  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -460,12 +485,24 @@ int main(int argc, char* argv[])
 {
   parser = new SMFParser();
   data = parser->load("ChairA.obj");
-  data1 = data;
   data2 = parser->load("SimpleChair1.obj");
+//  data = parser->load("SwivelChair04.obj");
+//  data = parser->load("chair0003.obj");
+  data1 = data;
 
   // mixer = new SimpleBox();
-  mixer = new HullGridPoints();
+  // mixer = new ClosestConnectingPoints();
+  // mixer = new HullGridPoints();
+  mixer = new BoxIntersectionPoints();
   data = mixer->mix(data1, data2);
+  controlPoints = mixer->controlPointVertices;
+
+//  data->findPartsNeighborsByBoxIntersection();
+//  for (auto pit = data->parts.begin(); pit != data->parts.end(); pit++) {
+//  	for (auto it = (*pit)->neighbors.begin(); it != (*pit)->neighbors.end(); it++) {
+//		controlPoints.insert(controlPoints.end(), (*it)->vertices.begin(), (*it)->vertices.end());
+//	}
+//  }
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);

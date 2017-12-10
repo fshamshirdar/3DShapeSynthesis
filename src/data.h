@@ -166,6 +166,9 @@ public:
 	void findPartsNeighborsByVertexToFaceDistance();
 	void findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::Part* part2);
 	void findPartsNeighborsByVertexToFaceDistanceForPart(Data::Part* part);
+	void findPartsNeighborsByBoxIntersection();
+	void findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* part2);
+	void findPartsNeighborsByBoxIntersectionForPart(Data::Part* part);
 	bool isPointWithinTriangle(Data::Face* face, Eigen::Vector3f P);
 	bool sameSide(Eigen::Vector3f p1, Eigen::Vector3f p2, Eigen::Vector3f A, Eigen::Vector3f B);
 

@@ -11,6 +11,7 @@ public:
 
 public:
 	std::string name;
+	std::vector<Data::Vertex*> controlPointVertices;
 };
 
 #endif
