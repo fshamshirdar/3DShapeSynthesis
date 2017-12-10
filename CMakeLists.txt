@@ -26,5 +26,6 @@ add_executable(smf_view
 	src/mixers/simple_box.cpp
 	src/mixers/eight_points.cpp
 	src/mixers/closest_connecting_points.cpp
+	src/mixers/hull_grid_points.cpp
 )
 target_link_libraries(smf_view glui::glui_static ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${EIGEN_LIBRARIES})

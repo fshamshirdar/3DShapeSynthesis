@@ -4,11 +4,22 @@
 #include "mix_match.h"
 #include <iostream>
 
-class ClosestConnectingPoints: public MixMatch {
+class HullGridPoints: public MixMatch {
 public:
 	Data* mix(Data* chair1, Data* chair2);
 
 public:
+	class HullGridPoint {
+	public:
+		Data::Vertex* front;
+		float dist;
+	public:
+		HullGridPoint() {
+			vertex = NULL;
+			dist = 1000.0;
+		}
+	};
+
 	class ClosestVertexPair {
 	public:
 		Eigen::Vector4f translation;

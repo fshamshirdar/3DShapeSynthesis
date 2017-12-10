@@ -464,7 +464,7 @@ int main(int argc, char* argv[])
   data2 = parser->load("SimpleChair1.obj");
 
   // mixer = new SimpleBox();
-  mixer = new ClosestConnectingPoints();
+  mixer = new HullGridPoints();
   data = mixer->mix(data1, data2);
 
   glutInit(&argc, argv);
