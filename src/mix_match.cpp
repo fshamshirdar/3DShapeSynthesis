@@ -3,5 +3,5 @@
 void MixMatch::scaleBoundingBox(Data::Part* from, Data::Part* to)
 {
 	from->scale(to->boundingBox);
-	from->transform(to->boundingBox.min() - from->boundingBox.min());
+	from->translate(to->boundingBox.min() - from->boundingBox.min());
 }

@@ -1,107 +1,57 @@
 #include "mix_match.h"
-#include "mixers/hull_grid_points.h"
+#include "control_points/hull_grid_points.h"
 #include <set>
 
 #include <iostream>
 
-#define K_NEAREST_NEIGHBORS 8
-#define GRID_X 10
-#define GRID_Y 10
-#define GRID_Z 10
-#define ENABLE_XZ true
-#define ENABLE_XY true
-#define ENABLE_YZ true
-
-Data* HullGridPoints::mix(Data* chair1, Data* chair2)
+HullGridPoints::HullGridPoints(int nx, int ny, int nz) : nx(nx), ny(ny), nz(nz)
 {
-	Data* output = chair1;
-	Data::Part* target = chair1->findPartByType(Data::Part::BACK_SHEET);
-	Data::Part* ref = chair2->findPartByType(Data::Part::BACK_SHEET);
+}
 
-	Eigen::Vector3f baseScale = (target->boundingBox.min() + target->boundingBox.max()) / 2.;
-	ref->scale(target->boundingBox, baseScale);
-	ref->transform(target->boundingBox.min() - ref->boundingBox.min());
+std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints(Data::Part* ref, Data::Part* target)
+{
+//	Eigen::Vector3f baseScale = (target->boundingBox.min() + target->boundingBox.max()) / 2.;
+//	ref->scale(target->boundingBox, baseScale);
+//	ref->transform(target->boundingBox.min() - ref->boundingBox.min());
 
 	HullGridPoints::HullGridPoint*** refPoints;
 	HullGridPoints::HullGridPoint*** targetPoints;
-	std::vector<HullGridPoints::HullVertexPair*> controlPoints;
+
+	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 
 	// XZ
-	refPoints = findXZHullPoints(ref, GRID_X, GRID_Z);
-	targetPoints = findXZHullPoints(target, GRID_X, GRID_Z);
-	std::vector<HullGridPoints::HullVertexPair*> controlPointsXZ = findCorrespondingPoints(refPoints, targetPoints, GRID_X, GRID_Z);
-	controlPoints.insert(controlPoints.end(), controlPointsXZ.begin(), controlPointsXZ.end());
+	if (nx != 0 && nz != 0) {
+		refPoints = findXZHullPoints(ref, nx, nz);
+		targetPoints = findXZHullPoints(target, nx, nz);
+		std::vector<ControlPointsMiner::ControlPoint*> controlPointsXZ = findCorrespondingPoints(refPoints, targetPoints, nx, nz);
+		controlPoints.insert(controlPoints.end(), controlPointsXZ.begin(), controlPointsXZ.end());
+	}
 	// XY
-	refPoints = findXYHullPoints(ref, GRID_X, GRID_Y);
-	targetPoints = findXYHullPoints(target, GRID_X, GRID_Y);
-	std::vector<HullGridPoints::HullVertexPair*> controlPointsXY = findCorrespondingPoints(refPoints, targetPoints, GRID_X, GRID_Y);
-	controlPoints.insert(controlPoints.end(), controlPointsXY.begin(), controlPointsXY.end());
+	if (nx != 0 && ny != 0) {
+		refPoints = findXZHullPoints(ref, nx, ny);
+		targetPoints = findXYHullPoints(target, nx, ny);
+		std::vector<ControlPointsMiner::ControlPoint*> controlPointsXY = findCorrespondingPoints(refPoints, targetPoints, nx, ny);
+		controlPoints.insert(controlPoints.end(), controlPointsXY.begin(), controlPointsXY.end());
+	}
 	// YZ
-	refPoints = findYZHullPoints(ref, GRID_Y, GRID_Z);
-	targetPoints = findYZHullPoints(target, GRID_Y, GRID_Z);
-	std::vector<HullGridPoints::HullVertexPair*> controlPointsYZ = findCorrespondingPoints(refPoints, targetPoints, GRID_Y, GRID_Z);
-	controlPoints.insert(controlPoints.end(), controlPointsYZ.begin(), controlPointsYZ.end());
-
-	for (auto cpit=controlPoints.begin(); cpit != controlPoints.end(); cpit++) {
-		controlPointVertices.push_back((*cpit)->vertex);
-	}
-	std::cout << "Controller points size: " << controlPoints.size() << std::endl;
-
-	ref->resetBoundingBox();
-	for (auto rit = ref->regions.begin(); rit != ref->regions.end(); rit++) {
-		Data::Region* region = (*rit);
-		region->resetBoundingBox();
-		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
-			Data::Vertex* vertex = (*vit);
-			float sum = 0.;
-
-			std::vector<HullGridPoints::VertexDist> kClosestPoints;
-			kClosestPoints.reserve(controlPoints.size());
-
-			for (auto cpit=controlPoints.begin(); cpit != controlPoints.end(); cpit++) {
-				HullGridPoints::VertexDist vd;
-				vd.translation = (*cpit)->translation;
-				vd.vertex = (*cpit)->vertex;
-				vd.dist = (vertex->pos - (*cpit)->vertex->pos).norm();
-				kClosestPoints.push_back(vd);
-			}
-
-			std::sort(kClosestPoints.begin(), kClosestPoints.end());
-
-			Eigen::Vector4f translation = Eigen::Vector4f::Zero();
-
-			int len = 0;
-			auto it = kClosestPoints.begin();
-			for (int i=0; i<K_NEAREST_NEIGHBORS && it != kClosestPoints.end(); i++, it++) {
-				sum += it->dist;
-				len ++;
-			}
-
- 			it = kClosestPoints.begin();
-			for (int i=0; i<len && it != kClosestPoints.end(); i++, it++) { // three closest base points
-				translation += ((sum - it->dist) / ((len-1)*sum)) * it->translation;
-			}
-			vertex->pos += translation;
-			vertex->pos[3] = 1;
-
-			ref->recalculateBoundingBox(vertex);
-			region->recalculateBoundingBox(vertex);
-		}
+	if (ny != 0 && nz != 0) {
+		refPoints = findXZHullPoints(ref, ny, nz);
+		targetPoints = findYZHullPoints(target, ny, nz);
+		std::vector<ControlPointsMiner::ControlPoint*> controlPointsYZ = findCorrespondingPoints(refPoints, targetPoints, ny, nz);
+		controlPoints.insert(controlPoints.end(), controlPointsYZ.begin(), controlPointsYZ.end());
 	}
 
-	output->replacePartByType(ref);
-
-	return output;
+	return controlPoints;
 }
 
-std::vector<HullGridPoints::HullVertexPair*> HullGridPoints::findCorrespondingPoints(HullGridPoints::HullGridPoint*** refPoints, HullGridPoints::HullGridPoint*** targetPoints, int n, int m)
+std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findCorrespondingPoints(HullGridPoints::HullGridPoint*** refPoints, HullGridPoints::HullGridPoint*** targetPoints, int n, int m)
 {
-	std::vector<HullGridPoints::HullVertexPair*> controlPoints;
+	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 	for (int i=0; i<2; i++) {
 		for (int j=0; j<n; j++) {
 			for (int k=0; k<m; k++) {
 				if (refPoints[i][j][k].vertex && targetPoints[i][j][k].vertex) {
-					HullGridPoints::HullVertexPair* pair = new HullGridPoints::HullVertexPair;
+					ControlPointsMiner::ControlPoint* pair = new ControlPointsMiner::ControlPoint;
 					pair->translation = (targetPoints[i][j][k].vertex->pos - refPoints[i][j][k].vertex->pos);
 					pair->vertex = refPoints[i][j][k].vertex;
 					pair->pair = targetPoints[i][j][k].vertex;

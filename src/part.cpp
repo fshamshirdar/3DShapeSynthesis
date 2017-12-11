@@ -37,6 +37,16 @@ void Data::Part::recalculateBoundingBox(Data::Vertex* vertex)
 	}
 }
 
+void Data::Part::findNeighborsByBoxIntersection()
+{
+	return parent->findPartsNeighborsByBoxIntersectionForPart(this);
+}
+
+void Data::Part::findNeighborsByVertexToFaceDistance()
+{
+	return parent->findPartsNeighborsByVertexToFaceDistanceForPart(this);
+}
+
 void Data::Part::scale(Eigen::Vector3f scale, Eigen::Vector3f base)
 {
 	resetBoundingBox();
@@ -83,7 +93,7 @@ void Data::Part::scale(Eigen::AlignedBox3f box)
 	this->scale(box, base);
 }
 
-void Data::Part::transform(Eigen::Vector3f transform)
+void Data::Part::translate(Eigen::Vector3f translate)
 {
 	resetBoundingBox();
 	for (auto rit = regions.begin(); rit != regions.end(); rit++) {
@@ -92,9 +102,9 @@ void Data::Part::transform(Eigen::Vector3f transform)
 		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
 			Data::Vertex* vertex = (*vit);
 			
-			vertex->pos[0] = (vertex->pos[0] + transform[0]);
-			vertex->pos[1] = (vertex->pos[1] + transform[1]);
-			vertex->pos[2] = (vertex->pos[2] + transform[2]);
+			vertex->pos[0] = (vertex->pos[0] + translate[0]);
+			vertex->pos[1] = (vertex->pos[1] + translate[1]);
+			vertex->pos[2] = (vertex->pos[2] + translate[2]);
 			vertex->pos[3] = 1;
 
 			region->recalculateBoundingBox(vertex);

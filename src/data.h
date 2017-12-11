@@ -18,6 +18,7 @@ public:
 	class W_edge;
 	class Face;
 	class Region;
+	class Part;
 	class PartIntersection;
 
 	/**
@@ -38,17 +39,20 @@ public:
 			BACK_LEG_SPINDLE = 10,
 		};
 	public:
+		Data*					parent;
 		Part::Type				type;
 		Eigen::AlignedBox3f			boundingBox;
 		std::vector<Data::Region*>		regions;
 		std::vector<Data::PartIntersection*>	neighbors;
 	public:
 		Part();
+		void findNeighborsByBoxIntersection();
+		void findNeighborsByVertexToFaceDistance();
 		void scale(Eigen::Vector3f scale, Eigen::Vector3f base);
 		void scale(Eigen::Vector3f scale);
 		void scale(Eigen::AlignedBox3f box, Eigen::Vector3f base);
 		void scale(Eigen::AlignedBox3f box);
-		void transform(Eigen::Vector3f transform);
+		void translate(Eigen::Vector3f translate);
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
 		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex);

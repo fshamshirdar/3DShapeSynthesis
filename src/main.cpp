@@ -3,11 +3,11 @@
 #include "smf_parser.h"
 #include "data.h"
 #include "mix_match.h"
-#include "mixers/simple_box.h"
-#include "mixers/eight_points.h"
-#include "mixers/closest_connecting_points.h"
-#include "mixers/hull_grid_points.h"
-#include "mixers/box_intersection_points.h"
+#include "control_points/eight_points.h"
+#include "control_points/closest_connecting_points.h"
+#include "control_points/hull_grid_points.h"
+#include "control_points/box_intersection_points.h"
+#include "mixers/knn_weighted_interpolation.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -54,7 +54,7 @@ Data		*data = NULL;
 Data		*data1 = NULL;
 Data		*data2 = NULL;
 MixMatch	*mixer = NULL;
-std::vector<Data::Vertex*> controlPoints;
+std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 
 /********** User IDs for callbacks ********/
 #define OPEN_ID              100
@@ -250,7 +250,7 @@ void draw_axes(float scale)
   glEnable(GL_LIGHTING);
 }
 
-void draw_control_points(std::vector<Data::Vertex*> points, const GLfloat* color)
+void draw_control_points(std::vector<ControlPointsMiner::ControlPoint*> points, const GLfloat* color)
 {
 	glDisable( GL_LIGHTING );
 
@@ -260,7 +260,9 @@ void draw_control_points(std::vector<Data::Vertex*> points, const GLfloat* color
 	glPointSize(10);
 	glBegin(GL_POINTS);
 	for (auto it=points.begin(); it != points.end(); it++) {
-		glVertex3fv((*it)->pos.head<3>().data());
+		if ((*it)->vertex) {
+			glVertex3fv((*it)->vertex->pos.head<3>().data());
+		}
 	}
 	glEnd();
 
@@ -484,18 +486,33 @@ void myGlutDisplay()
 int main(int argc, char* argv[])
 {
   parser = new SMFParser();
-  data = parser->load("ChairA.obj");
-  data2 = parser->load("SimpleChair1.obj");
+  data2 = parser->load("ChairA.obj");
+//  data2 = parser->load("SimpleChair1.obj");
 //  data = parser->load("SwivelChair04.obj");
-//  data = parser->load("chair0003.obj");
+  data = parser->load("chair0003.obj");
   data1 = data;
 
   // mixer = new SimpleBox();
   // mixer = new ClosestConnectingPoints();
   // mixer = new HullGridPoints();
-  mixer = new BoxIntersectionPoints();
+  // mixer = new BoxIntersectionPoints();
+
+  std::vector<ControlPointsMiner*> controlPointsMiners;
+  controlPointsMiners.push_back(new HullGridPoints(10, 0, 10));
+  controlPointsMiners.push_back(new BoxIntersectionPoints());
+
+  mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 1.0);
   data = mixer->mix(data1, data2);
-  controlPoints = mixer->controlPointVertices;
+  controlPoints = mixer->totalControlPoints;
+
+  // Data::Part* back1 = data1->findPartByType(Data::Part::Type::BACK_SHEET);
+  // Data::Part* back2 = data2->findPartByType(Data::Part::Type::BACK_SHEET);
+  // HullGridPoints* hullGridPoints = new HullGridPoints();
+  // BoxIntersectionPoints* boxIntersectionPoints = new BoxIntersectionPoints();
+  // ClosestConnectingPoints* closestConnectingPoints = new ClosestConnectingPoints();
+  // EightPoints* eightPoints = new EightPoints();
+  // controlPoints = eightPoints->findControlPoints(back1, back2);
+  // std::cout << controlPoints.size() << std::endl;
 
 //  data->findPartsNeighborsByBoxIntersection();
 //  for (auto pit = data->parts.begin(); pit != data->parts.end(); pit++) {

@@ -24,9 +24,10 @@ add_executable(smf_view
 	src/data.cpp
 	src/mix_match.cpp
 	src/mixers/simple_box.cpp
-	src/mixers/eight_points.cpp
-	src/mixers/closest_connecting_points.cpp
-	src/mixers/hull_grid_points.cpp
-	src/mixers/box_intersection_points.cpp
+	src/mixers/knn_weighted_interpolation.cpp
+	src/control_points/eight_points.cpp
+	src/control_points/closest_connecting_points.cpp
+	src/control_points/hull_grid_points.cpp
+	src/control_points/box_intersection_points.cpp
 )
 target_link_libraries(smf_view glui::glui_static ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${EIGEN_LIBRARIES})

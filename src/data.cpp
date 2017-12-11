@@ -10,6 +10,7 @@ Data::Part* Data::findPartByType(Data::Part::Type type)
 	}
 
 	Data::Part* part = new Data::Part();
+	part->parent = this;
 	part->type = type;
 
 	parts.push_back(part);
