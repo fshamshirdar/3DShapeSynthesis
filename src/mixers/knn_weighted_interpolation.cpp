@@ -22,9 +22,9 @@ Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
 
 Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* target)
 {
-	Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
+	// Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
 	// baseScale[2] = ref->boundingBox.min()[2];
-	ref->scale(target->boundingBox, baseScale);
+	// ref->scale(target->boundingBox, baseScale);
 
 	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 	for (auto mit = miners.begin(); mit != miners.end(); mit++)
@@ -36,8 +36,8 @@ Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* targe
 	}
 
 	// Eigen::Vector3f translation = ((target->boundingBox.max() - ref->boundingBox.max()) + (target->boundingBox.max() - ref->boundingBox.max())) / 2.;
-	Eigen::Vector3f translation = (target->boundingBox.min() - ref->boundingBox.min());
-	ref->translate(translation);
+	// Eigen::Vector3f translation = (target->boundingBox.min() - ref->boundingBox.min());
+	// ref->translate(translation);
 
 	ref->resetBoundingBox();
 	for (auto rit = ref->regions.begin(); rit != ref->regions.end(); rit++) {

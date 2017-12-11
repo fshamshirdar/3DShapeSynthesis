@@ -8,6 +8,10 @@
 
 std::vector<ControlPointsMiner::ControlPoint*> BoxIntersectionPoints::findControlPoints(Data::Part* ref, Data::Part* target)
 {
+	Eigen::Vector3f baseScale = (target->boundingBox.min() + target->boundingBox.max()) / 2.;
+	ref->scale(target->boundingBox, baseScale);
+	ref->translate(target->boundingBox.min() - ref->boundingBox.min());
+
 	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 
 	ref->findNeighborsByBoxIntersection();
