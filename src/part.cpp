@@ -120,11 +120,16 @@ void Data::Part::translate(Eigen::Vector3f translate)
 	}
 }
 
-void Data::Part::addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex)
+void Data::Part::addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex, bool mine)
 {
 	for (auto it = neighbors.begin(); it != neighbors.end(); it++) {
 		if ((*it)->neighbor == part) {
 			(*it)->vertices.push_back(vertex);
+			if (mine) {
+				(*it)->myVertices.push_back(vertex);
+			} else {
+				(*it)->neighborVertices.push_back(vertex);
+			}
 			(*it)->recalculateBoundingBox(vertex);
 			return;
 		}
@@ -133,6 +138,11 @@ void Data::Part::addVertexToPartIntersection(Data::Part* part, Data::Vertex* ver
 	Data::PartIntersection* partIntersection = new Data::PartIntersection();
 	partIntersection->neighbor = part;
 	partIntersection->vertices.push_back(vertex);
+	if (mine) {
+		partIntersection->myVertices.push_back(vertex);
+	} else {
+		partIntersection->neighborVertices.push_back(vertex);
+	}
 	partIntersection->recalculateBoundingBox(vertex);
 
 	neighbors.push_back(partIntersection);

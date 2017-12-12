@@ -29,14 +29,9 @@ public:
 		enum Type {
 			BACK_SHEET = 1,
 			SEAT_SHEET = 2,
-			LEFT_FRONT_LEG = 3,
-			LEFT_BACK_LEG = 4,
-			RIGHT_FRONT_LEG = 5,
-			RIGHT_BACK_LEG = 6,
-			FRONT_LEG_SPINDLE = 7,
-			LEFT_LEG_SPINDLE = 8,
-			RIGHT_LEG_SPINDLE = 9,
-			BACK_LEG_SPINDLE = 10,
+			FOUR_LEGGED = 3,
+			LEFT_HANDLE = 4,
+			RIGHT_HANDLE = 5,
 		};
 	public:
 		Data*					parent;
@@ -55,7 +50,7 @@ public:
 		void translate(Eigen::Vector3f translate);
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
-		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex);
+		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex, bool mine=true);
 		void recalculateNormals();
 	};
 
@@ -67,6 +62,8 @@ public:
 		Eigen::AlignedBox3f		boundingBox;
 		Data::Part*			neighbor;
 		std::vector<Data::Vertex*>	vertices;
+		std::vector<Data::Vertex*>	myVertices;
+		std::vector<Data::Vertex*>	neighborVertices;
 	public:
 		PartIntersection();
 		void resetBoundingBox();

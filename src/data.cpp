@@ -114,8 +114,8 @@ void Data::findRegionsNeighborsByVertexToFaceDistance(Data::Part* part1, Data::P
 					Eigen::Vector3f point3 = point.head<3>();
 					if (isPointWithinTriangle(face, point3)) {
 						if (fabs(dist) < 0.005) {
-							part1->addVertexToPartIntersection(part2, vertex);
-							part2->addVertexToPartIntersection(part1, vertex);
+							part1->addVertexToPartIntersection(part2, vertex, true);
+							part2->addVertexToPartIntersection(part1, vertex, false);
 
 							// l = part2->regions[j]->faces.size();
 							j = part2->regions.size();
@@ -166,21 +166,21 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 
 	for (auto r1it = part1->regions.begin(); r1it != part1->regions.end(); r1it++) {
 		for (auto r1vit = (*r1it)->vertices.begin(); r1vit != (*r1it)->vertices.end(); r1vit++) {
-			Eigen::Vector3f pos = (*r1vit)->pos.head<3>();
+			Eigen::Vector4f pos = (*r1vit)->pos;
 			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
 			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
-				part1->addVertexToPartIntersection(part2, (*r1vit));
-				part2->addVertexToPartIntersection(part1, (*r1vit));
+				part1->addVertexToPartIntersection(part2, (*r1vit), true);
+				part2->addVertexToPartIntersection(part1, (*r1vit), false);
 			}
 		}
 	}
 	for (auto r2it = part2->regions.begin(); r2it != part2->regions.end(); r2it++) {
 		for (auto r2vit = (*r2it)->vertices.begin(); r2vit != (*r2it)->vertices.end(); r2vit++) {
-			Eigen::Vector3f pos = (*r2vit)->pos.head<3>();
+			Eigen::Vector4f pos = (*r2vit)->pos;
 			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
 			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
-				part2->addVertexToPartIntersection(part1, (*r2vit));
-				part1->addVertexToPartIntersection(part2, (*r2vit));
+				part2->addVertexToPartIntersection(part1, (*r2vit), true);
+				part1->addVertexToPartIntersection(part2, (*r2vit), false);
 			}
 		}
 	}

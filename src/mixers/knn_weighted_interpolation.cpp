@@ -14,8 +14,10 @@ Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
 
 	//Data::Part* refBack = chair2->findPartByType(Data::Part::SEAT_SHEET);
 	//Data::Part* targetBack = chair1->findPartByType(Data::Part::SEAT_SHEET);
-	Data::Part* refBack = chair2->findPartByType(Data::Part::BACK_SHEET);
-	Data::Part* targetBack = chair1->findPartByType(Data::Part::BACK_SHEET);
+	//Data::Part* refBack = chair2->findPartByType(Data::Part::BACK_SHEET);
+	//Data::Part* targetBack = chair1->findPartByType(Data::Part::BACK_SHEET);
+	Data::Part* refBack = chair2->findPartByType(Data::Part::FOUR_LEGGED);
+	Data::Part* targetBack = chair1->findPartByType(Data::Part::FOUR_LEGGED);
 	refBack = mixPart(refBack, targetBack);
 	output->replacePartByType(refBack);
 
