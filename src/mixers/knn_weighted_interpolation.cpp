@@ -12,15 +12,17 @@ Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
 
+	//Data::Part* refBack = chair2->findPartByType(Data::Part::SEAT_SHEET);
+	//Data::Part* targetBack = chair1->findPartByType(Data::Part::SEAT_SHEET);
 	Data::Part* refBack = chair2->findPartByType(Data::Part::BACK_SHEET);
 	Data::Part* targetBack = chair1->findPartByType(Data::Part::BACK_SHEET);
-	refBack = mixBack(refBack, targetBack);
+	refBack = mixPart(refBack, targetBack);
 	output->replacePartByType(refBack);
 
 	return output;
 }
 
-Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* target)
+Data::Part* KNNWeightedInterpolation::mixPart(Data::Part* ref, Data::Part* target)
 {
 	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 	for (auto mit = miners.begin(); mit != miners.end(); mit++)
@@ -85,6 +87,7 @@ Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* targe
 			region->recalculateBoundingBox(vertex);
 		}
 	}
+	ref->recalculateNormals();
 
 	return ref;
 }

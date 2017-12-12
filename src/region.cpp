@@ -34,3 +34,16 @@ void Data::Region::recalculateBoundingBox(Data::Vertex* vertex)
 		boundingBox.max()[2] = vertex->pos[2];
 	}
 }
+
+void Data::Region::recalculateNormals()
+{
+	for (auto fit = faces.begin(); fit != faces.end(); fit++) {
+		Data::Face* face = (*fit);
+		face->calculateFaceNormal();
+	}
+
+	for (auto vit = vertices.begin(); vit != vertices.end(); vit++) {
+		Data::Vertex* vertex = (*vit);
+		vertex->calculateVertexNormal();
+	}
+}

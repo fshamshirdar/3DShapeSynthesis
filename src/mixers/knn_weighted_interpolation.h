@@ -10,7 +10,7 @@ class KNNWeightedInterpolation: public MixMatch {
 public:
 	KNNWeightedInterpolation(std::vector<ControlPointsMiner*> miners, int K, float maxDist);
 	Data* mix(Data* chair1, Data* chair2);
-	Data::Part* mixBack(Data::Part* ref, Data::Part* target);
+	Data::Part* mixPart(Data::Part* ref, Data::Part* target);
 
 private:
 	std::vector<ControlPointsMiner*> miners;

@@ -37,6 +37,13 @@ void Data::Part::recalculateBoundingBox(Data::Vertex* vertex)
 	}
 }
 
+void Data::Part::recalculateNormals()
+{
+	for (auto rit = regions.begin(); rit != regions.end(); rit++) {
+		(*rit)->recalculateNormals();
+	}
+}
+
 void Data::Part::findNeighborsByBoxIntersection()
 {
 	return parent->findPartsNeighborsByBoxIntersectionForPart(this);

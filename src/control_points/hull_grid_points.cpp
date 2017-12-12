@@ -26,14 +26,14 @@ std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints
 	}
 	// XY
 	if (nx != 0 && ny != 0) {
-		refPoints = findXZHullPoints(ref, nx, ny);
+		refPoints = findXYHullPoints(ref, nx, ny);
 		targetPoints = findXYHullPoints(target, nx, ny);
 		std::vector<ControlPointsMiner::ControlPoint*> controlPointsXY = findCorrespondingPoints(refPoints, targetPoints, nx, ny);
 		controlPoints.insert(controlPoints.end(), controlPointsXY.begin(), controlPointsXY.end());
 	}
 	// YZ
 	if (ny != 0 && nz != 0) {
-		refPoints = findXZHullPoints(ref, ny, nz);
+		refPoints = findYZHullPoints(ref, ny, nz);
 		targetPoints = findYZHullPoints(target, ny, nz);
 		std::vector<ControlPointsMiner::ControlPoint*> controlPointsYZ = findCorrespondingPoints(refPoints, targetPoints, ny, nz);
 		controlPoints.insert(controlPoints.end(), controlPointsYZ.begin(), controlPointsYZ.end());
@@ -49,7 +49,9 @@ std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findCorresponding
 	for (int i=0; i<2; i++) {
 		for (int j=0; j<n; j++) {
 			for (int k=0; k<m; k++) {
-				if (refPoints[i][j][k].vertex && targetPoints[i][j][k].vertex) {
+				if (refPoints[i][j][k].vertex && targetPoints[i][j][k].vertex &&
+				    refPoints[0][j][k].vertex != refPoints[1][j][k].vertex &&
+				    targetPoints[0][j][k].vertex != targetPoints[1][j][k].vertex) {
 					ControlPointsMiner::ControlPoint* pair = new ControlPointsMiner::ControlPoint;
 					pair->translation = (targetPoints[i][j][k].vertex->pos - refPoints[i][j][k].vertex->pos);
 					pair->vertex = refPoints[i][j][k].vertex;

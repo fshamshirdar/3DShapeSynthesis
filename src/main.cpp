@@ -7,6 +7,7 @@
 #include "control_points/closest_connecting_points.h"
 #include "control_points/hull_grid_points.h"
 #include "control_points/box_intersection_points.h"
+#include "control_points/box_intersection_target_points.h"
 #include "mixers/knn_weighted_interpolation.h"
 
 #ifdef __APPLE__
@@ -486,34 +487,44 @@ void myGlutDisplay()
 int main(int argc, char* argv[])
 {
   parser = new SMFParser();
-  data2 = parser->load("ChairA.obj");
-//  data2 = parser->load("SimpleChair1.obj");
-//  data = parser->load("SwivelChair04.obj");
-  data = parser->load("chair0003.obj");
+  data = parser->load("ChairA.obj");
+  data2 = parser->load("SimpleChair1.obj");
+//  data2 = parser->load("SwivelChair04.obj");
+//  data2 = parser->load("chair0003.obj");
   data1 = data;
 
-  // mixer = new SimpleBox();
-  // mixer = new ClosestConnectingPoints();
-  // mixer = new HullGridPoints();
-  // mixer = new BoxIntersectionPoints();
 
+
+  //ControlPointsMiner* controlPointsMiner;
   std::vector<ControlPointsMiner*> controlPointsMiners;
-  controlPointsMiners.push_back(new HullGridPoints(20, 0, 20));
-  controlPointsMiners.push_back(new BoxIntersectionPoints());
+  controlPointsMiners.push_back(new BoxIntersectionTargetPoints());
+//  controlPointsMiners.push_back(new HullGridPoints(10, 10, 0));
+//  controlPointsMiners.push_back(new EightPoints());
+//  controlPointsMiners.push_back(new BoxIntersectionPoints());
 
-  mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 0.5);
+  mixer = new KNNWeightedInterpolation(controlPointsMiners, 3, 1.5);
   data = mixer->mix(data1, data2);
   controlPoints = mixer->totalControlPoints;
 
-  //Data::Part* back1 = data1->findPartByType(Data::Part::Type::BACK_SHEET);
-  //Data::Part* back2 = data2->findPartByType(Data::Part::Type::BACK_SHEET);
-  //ControlPointsMiner* controlPointsMiner;
+
+
+
+/*
+  Data::Part* back1 = data1->findPartByType(Data::Part::Type::SEAT_SHEET);
+  Data::Part* back2 = data2->findPartByType(Data::Part::Type::SEAT_SHEET);
+  ControlPointsMiner* controlPointsMiner;
   // HullGridPoints* hullGridPoints = new HullGridPoints();
-  //controlPointsMiner = new BoxIntersectionPoints();
+  // controlPointsMiner = new HullGridPoints(10, 10, 0);
+  // controlPointsMiner = new BoxIntersectionPoints();
+  controlPointsMiner = new BoxIntersectionTargetPoints();
   // ClosestConnectingPoints* closestConnectingPoints = new ClosestConnectingPoints();
   // EightPoints* eightPoints = new EightPoints();
-  //controlPoints = controlPointsMiner->findControlPoints(back1, back2);
+  controlPoints = controlPointsMiner->findControlPoints(back1, back2);
   // std::cout << controlPoints.size() << std::endl;
+*/
+
+
+
 
 //  data->findPartsNeighborsByBoxIntersection();
 //  for (auto pit = data->parts.begin(); pit != data->parts.end(); pit++) {

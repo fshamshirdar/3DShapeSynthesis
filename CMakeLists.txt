@@ -30,5 +30,6 @@ add_executable(smf_view
 	src/control_points/closest_connecting_points.cpp
 	src/control_points/hull_grid_points.cpp
 	src/control_points/box_intersection_points.cpp
+	src/control_points/box_intersection_target_points.cpp
 )
 target_link_libraries(smf_view glui::glui_static ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES} ${EIGEN_LIBRARIES})

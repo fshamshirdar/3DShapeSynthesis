@@ -144,7 +144,6 @@ void Data::findPartsNeighborsByBoxIntersectionForPart(Data::Part* part)
 	for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
 		if (part != (*p2it)) {
 			findRegionsNeighborsByBoxIntersection(part, *p2it);
-			findRegionsNeighborsByBoxIntersection(*p2it, part);
 		}
 	}
 }
@@ -171,6 +170,7 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
 			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
 				part1->addVertexToPartIntersection(part2, (*r1vit));
+				part2->addVertexToPartIntersection(part1, (*r1vit));
 			}
 		}
 	}
@@ -180,6 +180,7 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
 			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
 				part2->addVertexToPartIntersection(part1, (*r2vit));
+				part1->addVertexToPartIntersection(part2, (*r2vit));
 			}
 		}
 	}

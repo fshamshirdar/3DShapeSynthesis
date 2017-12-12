@@ -56,6 +56,7 @@ public:
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
 		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex);
+		void recalculateNormals();
 	};
 
 	/**
@@ -90,6 +91,7 @@ public:
 		Region();
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
+		void recalculateNormals();
 	};
 
 	/**
