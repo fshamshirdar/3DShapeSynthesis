@@ -10,9 +10,7 @@ HullGridPoints::HullGridPoints(int nx, int ny, int nz) : nx(nx), ny(ny), nz(nz)
 
 std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints(Data::Part* ref, Data::Part* target)
 {
-//	Eigen::Vector3f baseScale = (target->boundingBox.min() + target->boundingBox.max()) / 2.;
-//	ref->scale(target->boundingBox, baseScale);
-//	ref->transform(target->boundingBox.min() - ref->boundingBox.min());
+	scaleToTarget(ref, target);
 
 	HullGridPoints::HullGridPoint*** refPoints;
 	HullGridPoints::HullGridPoint*** targetPoints;
@@ -40,6 +38,7 @@ std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints
 		std::vector<ControlPointsMiner::ControlPoint*> controlPointsYZ = findCorrespondingPoints(refPoints, targetPoints, ny, nz);
 		controlPoints.insert(controlPoints.end(), controlPointsYZ.begin(), controlPointsYZ.end());
 	}
+	unscaleToRef(ref, target);
 
 	return controlPoints;
 }

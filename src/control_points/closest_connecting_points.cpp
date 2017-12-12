@@ -12,6 +12,8 @@ std::vector<ControlPointsMiner::ControlPoint*> ClosestConnectingPoints::findCont
 
 	ref->findNeighborsByVertexToFaceDistance();
 	target->findNeighborsByVertexToFaceDistance();
+
+	scaleToTarget(ref, target);
 	for (auto rnit = ref->neighbors.begin(); rnit != ref->neighbors.end(); rnit++) {
 		for (auto vrnit = (*rnit)->vertices.begin(); vrnit != (*rnit)->vertices.end(); vrnit++) {
 			Data::Vertex* closestVertex = NULL;
@@ -36,6 +38,7 @@ std::vector<ControlPointsMiner::ControlPoint*> ClosestConnectingPoints::findCont
 			}
 		}
 	}
+	unscaleToRef(ref, target);
 
 	return controlPoints;
 }

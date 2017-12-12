@@ -25,6 +25,7 @@ add_executable(smf_view
 	src/mix_match.cpp
 	src/mixers/simple_box.cpp
 	src/mixers/knn_weighted_interpolation.cpp
+	src/control_points.cpp
 	src/control_points/eight_points.cpp
 	src/control_points/closest_connecting_points.cpp
 	src/control_points/hull_grid_points.cpp

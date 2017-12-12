@@ -22,10 +22,6 @@ Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
 
 Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* target)
 {
-	// Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
-	// baseScale[2] = ref->boundingBox.min()[2];
-	// ref->scale(target->boundingBox, baseScale);
-
 	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 	for (auto mit = miners.begin(); mit != miners.end(); mit++)
 	{
@@ -35,9 +31,16 @@ Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* targe
 		totalControlPoints.insert(totalControlPoints.end(), minerControlPoints.begin(), minerControlPoints.end());
 	}
 
+	Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
+	ref->scale(target->boundingBox, baseScale);
 	// Eigen::Vector3f translation = ((target->boundingBox.max() - ref->boundingBox.max()) + (target->boundingBox.max() - ref->boundingBox.max())) / 2.;
-	// Eigen::Vector3f translation = (target->boundingBox.min() - ref->boundingBox.min());
-	// ref->translate(translation);
+	Eigen::Vector3f translation = (target->boundingBox.min() - ref->boundingBox.min());
+	ref->translate(translation);
+
+	// TODO: do we really need this?
+	for (auto cit = controlPoints.begin(); cit != controlPoints.end(); cit++) {
+		(*cit)->translation = ((*cit)->pair->pos - (*cit)->vertex->pos);
+	}
 
 	ref->resetBoundingBox();
 	for (auto rit = ref->regions.begin(); rit != ref->regions.end(); rit++) {
@@ -55,7 +58,9 @@ Data::Part* KNNWeightedInterpolation::mixBack(Data::Part* ref, Data::Part* targe
 				vd.translation = (*cpit)->translation;
 				vd.vertex = (*cpit)->vertex;
 				vd.dist = (vertex->pos - (*cpit)->vertex->pos).norm();
-				kClosestPoints.push_back(vd);
+				if (vd.dist < maxDist) {
+					kClosestPoints.push_back(vd);
+				}
 			}
 
 			std::sort(kClosestPoints.begin(), kClosestPoints.end());

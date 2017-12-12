@@ -498,21 +498,21 @@ int main(int argc, char* argv[])
   // mixer = new BoxIntersectionPoints();
 
   std::vector<ControlPointsMiner*> controlPointsMiners;
-  // controlPointsMiners.push_back(new HullGridPoints(10, 0, 10));
+  controlPointsMiners.push_back(new HullGridPoints(20, 0, 20));
   controlPointsMiners.push_back(new BoxIntersectionPoints());
 
-  //mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 1.0);
-  //data = mixer->mix(data1, data2);
-  //controlPoints = mixer->totalControlPoints;
+  mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 0.5);
+  data = mixer->mix(data1, data2);
+  controlPoints = mixer->totalControlPoints;
 
-  Data::Part* back1 = data1->findPartByType(Data::Part::Type::BACK_SHEET);
-  Data::Part* back2 = data2->findPartByType(Data::Part::Type::BACK_SHEET);
-  ControlPointsMiner* controlPointsMiner;
+  //Data::Part* back1 = data1->findPartByType(Data::Part::Type::BACK_SHEET);
+  //Data::Part* back2 = data2->findPartByType(Data::Part::Type::BACK_SHEET);
+  //ControlPointsMiner* controlPointsMiner;
   // HullGridPoints* hullGridPoints = new HullGridPoints();
-  controlPointsMiner = new BoxIntersectionPoints();
+  //controlPointsMiner = new BoxIntersectionPoints();
   // ClosestConnectingPoints* closestConnectingPoints = new ClosestConnectingPoints();
   // EightPoints* eightPoints = new EightPoints();
-  controlPoints = controlPointsMiner->findControlPoints(back1, back2);
+  //controlPoints = controlPointsMiner->findControlPoints(back1, back2);
   // std::cout << controlPoints.size() << std::endl;
 
 //  data->findPartsNeighborsByBoxIntersection();

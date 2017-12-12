@@ -11,6 +11,8 @@ std::vector<ControlPointsMiner::ControlPoint*> EightPoints::findControlPoints(Da
 	Data::Vertex** refVertices = find8Points(ref);
 	Data::Vertex** targetVertices = find8Points(target);
 
+	scaleToTarget(ref, target);
+
 	for (int i=0; i<8; i++) {
 		ControlPointsMiner::ControlPoint* pair = new ControlPointsMiner::ControlPoint;
 		pair->translation = (targetVertices[i]->pos - refVertices[i]->pos);
@@ -19,6 +21,8 @@ std::vector<ControlPointsMiner::ControlPoint*> EightPoints::findControlPoints(Da
 		pair->dist = 0.;
 		controlPoints.push_back(pair);
 	}
+
+	unscaleToRef(ref, target);
 
 	return controlPoints;
 }

@@ -38,4 +38,11 @@ public:
 
 public:
 	virtual std::vector<ControlPointsMiner::ControlPoint*> findControlPoints(Data::Part* ref, Data::Part* target) = 0;
+
+	void scaleToTarget(Data::Part* ref, Data::Part* target);
+	void unscaleToRef(Data::Part* ref, Data::Part* target);
+
+private:
+	Eigen::AlignedBox3f refBase;
+	Eigen::AlignedBox3f refBaseScaled;
 };
