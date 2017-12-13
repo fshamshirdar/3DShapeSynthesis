@@ -13,6 +13,26 @@ Data::Part* Data::findPartByType(Data::Part::Type type)
 	part->parent = this;
 	part->type = type;
 
+	if (type == Data::Part::Type::LEG) {
+		part->type = Data::Part::Type::TWO_LEGGED;
+		Eigen::AlignedBox3f boundingBox;
+		for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+			Data::Part* child = findPartByType((Data::Part::Type)(i));
+			if (! child) {
+				continue;
+			}
+
+			if ((Data::Part::Type)(i) == Data::Part::Type::LEG_FRONT_LEG) {
+				part->type = Data::Part::Type::FOUR_LEGGED;
+			} else if ((Data::Part::Type)(i) == Data::Part::Type::LEG_BAR) {
+				part->type = Data::Part::Type::SINGLE_LEGGED;
+			}
+			boundingBox = boundingBox.extend(child->boundingBox);
+			part->regions.insert(part->regions.end(), child->regions.begin(), child->regions.end());
+		}
+		part->boundingBox = boundingBox;
+	}
+
 	parts.push_back(part);
 
 	return part;
@@ -35,6 +55,21 @@ void Data::replacePartByType(Data::Part* part)
 	for (int i=0; i < parts.size(); i++) {
 		if (parts[i]->type == part->type) {
 			parts[i] = part;
+			if (part->type == Data::Part::Type::FOUR_LEGGED ||
+			    part->type == Data::Part::Type::SINGLE_LEGGED ||
+			    part->type == Data::Part::Type::TWO_LEGGED) {
+				for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+					deletePartByType((Data::Part::Type)(i));
+				}
+			}
+		}
+	}
+}
+
+void Data::deletePartByType(Data::Part::Type type)
+{	for (auto it=parts.begin(); it != parts.end(); it++) {
+		if ((*it)->type == type) {
+			it = parts.erase(it);
 		}
 	}
 }
@@ -82,7 +117,9 @@ void Data::findPartsNeighborsByVertexToFaceDistance()
 {
 	for (auto p1it = parts.begin(); p1it != parts.end(); p1it++) {
 		for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
-			if ((*p1it) != (*p2it)) {
+			if ((*p1it) != (*p2it) &&
+			    ! (*p1it)->isChild(*p2it) &&
+			    ! (*p1it)->isParent(*p2it)) {
 				findRegionsNeighborsByVertexToFaceDistance(*p1it, *p2it);
 			}
 		}
@@ -92,7 +129,9 @@ void Data::findPartsNeighborsByVertexToFaceDistance()
 void Data::findPartsNeighborsByVertexToFaceDistanceForPart(Data::Part* part)
 {
 	for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
-		if (part != (*p2it)) {
+		if (part != (*p2it) &&
+		    ! (part)->isChild(*p2it) &&
+		    ! (part)->isParent(*p2it)) {
 			findRegionsNeighborsByVertexToFaceDistance(part, *p2it);
 			findRegionsNeighborsByVertexToFaceDistance(*p2it, part);
 		}
@@ -132,7 +171,9 @@ void Data::findPartsNeighborsByBoxIntersection()
 {
 	for (auto p1it = parts.begin(); p1it != parts.end(); p1it++) {
 		for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
-			if ((*p1it) != (*p2it)) {
+			if ((*p1it) != (*p2it) &&
+			    ! (*p1it)->isChild(*p2it) &&
+			    ! (*p1it)->isParent(*p2it)) {
 				findRegionsNeighborsByBoxIntersection(*p1it, *p2it);
 			}
 		}
@@ -142,7 +183,9 @@ void Data::findPartsNeighborsByBoxIntersection()
 void Data::findPartsNeighborsByBoxIntersectionForPart(Data::Part* part)
 {
 	for (auto p2it = parts.begin(); p2it != parts.end(); p2it++) {
-		if (part != (*p2it)) {
+		if (part != (*p2it) &&
+		    ! part->isChild(*p2it) &&
+		    ! part->isParent(*p2it)) {
 			findRegionsNeighborsByBoxIntersection(part, *p2it);
 		}
 	}

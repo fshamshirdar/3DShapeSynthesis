@@ -1,5 +1,4 @@
-#ifndef __WEDS_H__
-#define __WEDS_H__
+#pragma once
 
 #include <string>
 #include <Eigen/Core>
@@ -29,10 +28,22 @@ public:
 		enum Type {
 			BACK_SHEET = 1,
 			SEAT_SHEET = 2,
-			FOUR_LEGGED = 3,
-			LEFT_HANDLE = 4,
-			RIGHT_HANDLE = 5,
+			HANDLE_LEFT = 3,
+			HANDLE_RIGHT = 4,
+			LEG_SPINDLE = 5,
+			LEG_BASE = 6,
+			LEG_BAR = 7,
+			LEG_BRANCH = 8,
+			LEG_FRONT_LEG = 9,
+			LEG_BACK_LEG = 10,
+
+			FOUR_LEGGED = 11,
+			SINGLE_LEGGED = 12,
+			TWO_LEGGED = 13,
+
+			LEG = 14, // dummy
 		};
+
 	public:
 		Data*					parent;
 		Part::Type				type;
@@ -41,6 +52,8 @@ public:
 		std::vector<Data::PartIntersection*>	neighbors;
 	public:
 		Part();
+		bool isChild(Data::Part* parent);
+		bool isParent(Data::Part* child);
 		void findNeighborsByBoxIntersection();
 		void findNeighborsByVertexToFaceDistance();
 		void scale(Eigen::Vector3f scale, Eigen::Vector3f base);
@@ -164,6 +177,7 @@ public:
 	void addPart(Data::Part* part);
 	void addParts(Data* data);
 	void replacePartByType(Data::Part* part);
+	void deletePartByType(Data::Part::Type type);
 
 	Data::W_edge* findEdge(const Data::Region* region, const Data::Vertex* v1, const Data::Vertex* v2);
 	void findPartsNeighborsByVertexToFaceDistance();
@@ -184,5 +198,3 @@ public:
 	int vertices_size;
 	int faces_size;
 };
-
-#endif

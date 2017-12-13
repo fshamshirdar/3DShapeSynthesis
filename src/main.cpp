@@ -489,27 +489,28 @@ void myGlutDisplay()
 int main(int argc, char* argv[])
 {
   parser = new SMFParser();
-  data2 = parser->load("ChairA.obj");
-  data = parser->load("SimpleChair1.obj");
+  data = parser->load("ChairA.obj");
+  data2 = parser->load("SimpleChair1.obj");
 //  data2 = parser->load("SwivelChair04.obj");
-//  data2 = parser->load("chair0003.obj");
+//  data = parser->load("chair0003.obj");
   data1 = data;
 
+
+  // Data::Part* leg = data1->findPartByType(Data::Part::Type::LEG);
 
 
   //ControlPointsMiner* controlPointsMiner;
   std::vector<ControlPointsMiner*> controlPointsMiners;
 //  controlPointsMiners.push_back(new BoxIntersectionTargetPoints());
-//  controlPointsMiners.push_back(new HullGridPoints(0, 20, 20));
+  controlPointsMiners.push_back(new HullGridPoints(10, 0, 10));
 //  controlPointsMiners.push_back(new EightPoints());
   controlPointsMiners.push_back(new BoxIntersectionPoints());
 
-  mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 0.8);
-  mixer = new SimpleBox();
+  //mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 0.8);
+  //mixer = new SimpleBox();
   mixer = new IntersectionBox();
   data = mixer->mix(data1, data2);
   controlPoints = mixer->totalControlPoints;
-
   data->findPartsNeighborsByBoxIntersection();
 
 

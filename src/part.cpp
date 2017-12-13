@@ -37,6 +37,36 @@ void Data::Part::recalculateBoundingBox(Data::Vertex* vertex)
 	}
 }
 
+bool Data::Part::isChild(Data::Part* parent)
+{
+	if (parent->type == Data::Part::Type::FOUR_LEGGED ||
+	    parent->type == Data::Part::Type::SINGLE_LEGGED ||
+	    parent->type == Data::Part::Type::TWO_LEGGED) {
+		for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+			if (type == (Data::Part::Type)(i)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Data::Part::isParent(Data::Part* child)
+{
+	if (type == Data::Part::Type::FOUR_LEGGED ||
+	    type == Data::Part::Type::SINGLE_LEGGED ||
+	    type == Data::Part::Type::TWO_LEGGED) {
+		for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+			if (child->type == (Data::Part::Type)(i)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void Data::Part::recalculateNormals()
 {
 	for (auto rit = regions.begin(); rit != regions.end(); rit++) {

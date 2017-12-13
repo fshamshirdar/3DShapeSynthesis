@@ -22,6 +22,7 @@ add_executable(smf_view
 	src/part.cpp
 	src/part_intersection.cpp
 	src/data.cpp
+	src/utils.cpp
 	src/mix_match.cpp
 	src/mixers/simple_box.cpp
 	src/mixers/intersection_box.cpp
