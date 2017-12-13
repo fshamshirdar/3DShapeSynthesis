@@ -11,6 +11,8 @@
 #include "mixers/knn_weighted_interpolation.h"
 #include "mixers/simple_box.h"
 #include "mixers/intersection_box.h"
+#include "mixers/missing_part.h"
+#include "mixers/missing_intersection_part.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -489,15 +491,17 @@ void myGlutDisplay()
 int main(int argc, char* argv[])
 {
   parser = new SMFParser();
-  data = parser->load("ChairA.obj");
-  data2 = parser->load("SimpleChair1.obj");
+  data2 = parser->load("ChairA.obj");
+  data = parser->load("SimpleChair1.obj");
 //  data2 = parser->load("SwivelChair04.obj");
+//  data2 = parser->load("FancyChair.obj");
+//  data2 = parser->load("SwivelChair04.obj");
+//  data2 = parser->load("chair0370.obj");
+//  data2 = parser->load("SingleLegChair.obj");
 //  data = parser->load("chair0003.obj");
   data1 = data;
 
-
   // Data::Part* leg = data1->findPartByType(Data::Part::Type::LEG);
-
 
   //ControlPointsMiner* controlPointsMiner;
   std::vector<ControlPointsMiner*> controlPointsMiners;
@@ -508,10 +512,13 @@ int main(int argc, char* argv[])
 
   //mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 0.8);
   //mixer = new SimpleBox();
-  mixer = new IntersectionBox();
+  //mixer = new IntersectionBox();
+  //mixer = new MissingPart();
+  mixer = new MissingIntersectionPart();
   data = mixer->mix(data1, data2);
   controlPoints = mixer->totalControlPoints;
   data->findPartsNeighborsByBoxIntersection();
+
 
 
 /*

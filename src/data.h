@@ -28,8 +28,8 @@ public:
 		enum Type {
 			BACK_SHEET = 1,
 			SEAT_SHEET = 2,
-			HANDLE_LEFT = 3,
-			HANDLE_RIGHT = 4,
+			LEFT_HANDLE = 3,
+			RIGHT_HANDLE = 4,
 			LEG_SPINDLE = 5,
 			LEG_BASE = 6,
 			LEG_BAR = 7,

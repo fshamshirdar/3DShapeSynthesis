@@ -62,8 +62,12 @@ void Data::replacePartByType(Data::Part* part)
 					deletePartByType((Data::Part::Type)(i));
 				}
 			}
+			return;
 		}
 	}
+
+	findPartByType(part->type);
+	replacePartByType(part);
 }
 
 void Data::deletePartByType(Data::Part::Type type)

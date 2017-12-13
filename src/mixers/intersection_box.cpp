@@ -6,11 +6,17 @@ Data* IntersectionBox::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
 
-	//Data::Part* target = chair1->findPartByType(Data::Part::BACK_SHEET);
-	//Data::Part* ref = chair2->findPartByType(Data::Part::BACK_SHEET);
-	Data::Part* target = chair1->findPartByType(Data::Part::LEG);
-	Data::Part* ref = chair2->findPartByType(Data::Part::LEG);
-	
+//	Data::Part* target = chair1->findPartByType(Data::Part::BACK_SHEET);
+//	Data::Part* ref = chair2->findPartByType(Data::Part::BACK_SHEET);
+//	Data::Part* target = chair1->findPartByType(Data::Part::LEG);
+//	Data::Part* ref = chair2->findPartByType(Data::Part::LEG);
+//	Data::Part* target = chair1->findPartByType(Data::Part::LEG_BACK_LEG);
+//	Data::Part* ref = chair2->findPartByType(Data::Part::LEG_BACK_LEG);
+	Data::Part* target = chair1->findPartByType(Data::Part::LEG_FRONT_LEG);
+	Data::Part* ref = chair2->findPartByType(Data::Part::LEG_FRONT_LEG);
+//	Data::Part* target = chair1->findPartByType(Data::Part::SEAT_SHEET);
+//	Data::Part* ref = chair2->findPartByType(Data::Part::SEAT_SHEET);
+
 	mixPart(ref, target);
 	output->replacePartByType(ref);
 
@@ -36,10 +42,12 @@ Data::Part* IntersectionBox::mixPart(Data::Part* ref, Data::Part* target)
 				Eigen::Vector3f scale;
 				scale[0] = to[0] / from[0];
 				scale[1] = to[1] / from[1];
-				scale[2] = 1.; // to[2] / from[2];
+				scale[2] = (target->boundingBox.max()[2] - target->boundingBox.min()[2]) / (ref->boundingBox.max()[2] - ref->boundingBox.min()[2]); // to[2] / from[2];
 				scales += scale;
 
-				Eigen::Vector3f translation = (targetNeighbor->boundingBox.min() - refNeighbor->boundingBox.min());
+				Eigen::Vector3f translation = (targetNeighbor->boundingBox.min() + targetNeighbor->boundingBox.max()) / 2. -
+					      		      (refNeighbor->boundingBox.min() + refNeighbor->boundingBox.max()) / 2.;
+				translation[2] = (target->boundingBox.max()[2] + target->boundingBox.min()[2]) / 2. - (ref->boundingBox.max()[2] + ref->boundingBox.min()[2]) / 2.; // to[2] / from[2];
 				translations += translation;
 
 				len ++;
@@ -52,10 +60,10 @@ Data::Part* IntersectionBox::mixPart(Data::Part* ref, Data::Part* target)
 		translations = Eigen::Vector3f::Zero();
 	} else {
 		scales[0] /= len; scales[1] /= len; scales[2] /= len;
-		translations[0] /= len; translations[0] /= len; translations[0] /= len;
+		translations[0] /= len; translations[1] /= len; translations[2] /= len;
 	}
 
-	std::cout << scales << std::endl;
+	std::cout << "len: " << len << std::endl << scales << std::endl;
 
 	Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
 	ref->scale(scales, baseScale);
