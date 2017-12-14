@@ -9,6 +9,7 @@ SMFParser::~SMFParser() { }
 Data* SMFParser::load(const std::string &filename)
 {
 	Data* data = new Data();
+	data->path = filename;
 
 	std::ifstream infile(filename.c_str());
 	if (! infile.good()) {

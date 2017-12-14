@@ -10,6 +10,7 @@
 #else
 #include <GL/glut.h>
 #endif
+#include "utils.h"
 
 class Data {
 public:
@@ -30,18 +31,21 @@ public:
 			SEAT_SHEET = 2,
 			LEFT_HANDLE = 3,
 			RIGHT_HANDLE = 4,
-			LEG_SPINDLE = 5,
+			LEG_FRONT_SPINDLE = 5,
 			LEG_BASE = 6,
 			LEG_BAR = 7,
 			LEG_BRANCH = 8,
 			LEG_FRONT_LEG = 9,
 			LEG_BACK_LEG = 10,
-
-			FOUR_LEGGED = 11,
-			SINGLE_LEGGED = 12,
-			TWO_LEGGED = 13,
+			LEG_BACK_SPINDLE = 11,
+			LEG_LEFT_SPINDLE = 12,
+			LEG_RIGHT_SPINDLE = 13,
 
 			LEG = 14, // dummy
+
+			FOUR_LEGGED = 20,
+			SINGLE_LEGGED = 21,
+			TWO_LEGGED = 22,
 		};
 
 	public:
@@ -61,6 +65,7 @@ public:
 		void scale(Eigen::AlignedBox3f box, Eigen::Vector3f base);
 		void scale(Eigen::AlignedBox3f box);
 		void translate(Eigen::Vector3f translate);
+		void transform(std::pair<Eigen::Matrix3f, Eigen::Vector3f> transformation);
 		void resetBoundingBox();
 		void recalculateBoundingBox(Data::Vertex* vertex);
 		void addVertexToPartIntersection(Data::Part* part, Data::Vertex* vertex, bool mine=true);
@@ -173,6 +178,7 @@ public:
 	/////////////////
 public:
 	// Parts
+	Data* clone();
 	Data::Part* findPartByType(Part::Type type);
 	void addPart(Data::Part* part);
 	void addParts(Data* data);
@@ -194,6 +200,7 @@ public:
 	/////////////////
 public:
 	std::vector<Data::Part*> parts;
+	std::string path;
 
 	int vertices_size;
 	int faces_size;

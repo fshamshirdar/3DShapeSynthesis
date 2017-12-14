@@ -4,12 +4,17 @@
 
 #define DIST_THR 10.
 
+MissingIntersectionPart::MissingIntersectionPart()
+{
+	this->name = "missing intersection part";
+}
+
 Data* MissingIntersectionPart::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
 
 	Data::Part* target = chair1->findPartByType(Data::Part::SEAT_SHEET); // dummy
-	Data::Part* ref = chair2->findPartByType(Data::Part::LEG_SPINDLE);
+	Data::Part* ref = chair2->findPartByType(Data::Part::LEFT_HANDLE);
 
 	mixPart(ref, target);
 	output->replacePartByType(ref);
@@ -70,14 +75,16 @@ Data::Part* MissingIntersectionPart::mixPart(Data::Part* ref, Data::Part* target
 
 		Data::Part* targetPair = targetChair->findPartByType(refNeighbor->type);
 		if (targetPair) {
-			Eigen::Vector3f baseScale = (refNeighbor->boundingBox.min() + refNeighbor->boundingBox.max()) / 2.;
-			refNeighbor->scale(target->boundingBox, baseScale);
-			// Eigen::Vector3f translation = ((target->boundingBox.max() - ref->boundingBox.max()) + (target->boundingBox.max() - ref->boundingBox.max())) / 2.;
-			Eigen::Vector3f translation = (targetPair->boundingBox.min() - refNeighbor->boundingBox.min());
-			refNeighbor->translate(translation);
+//			Eigen::Vector3f baseScale = (refNeighbor->boundingBox.min() + refNeighbor->boundingBox.max()) / 2.;
+//			refNeighbor->scale(target->boundingBox, baseScale);
+//			// Eigen::Vector3f translation = ((target->boundingBox.max() - ref->boundingBox.max()) + (target->boundingBox.max() - ref->boundingBox.max())) / 2.;
+//			Eigen::Vector3f translation = (targetPair->boundingBox.min() - refNeighbor->boundingBox.min());
+//			refNeighbor->translate(translation);
+			refNeighbor->scale(scales, baseScale);
+			refNeighbor->translate(translations);
 
 			std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
-			for (auto vrnit=(*rnit)->neighborVertices.begin(); vrnit!=(*rnit)->neighborVertices.end(); vrnit++) {
+			for (auto vrnit=(*rnit)->vertices.begin(); vrnit!=(*rnit)->vertices.end(); vrnit++) {
 				Data::Vertex* closestVertex = NULL;
 				float minDist = 1000.;
 				for (auto rtit=targetPair->regions.begin(); rtit!=targetPair->regions.end(); rtit++) {
@@ -97,6 +104,8 @@ Data::Part* MissingIntersectionPart::mixPart(Data::Part* ref, Data::Part* target
 					pair->pair = closestVertex;
 					pair->dist = minDist;
 					controlPoints.push_back(pair);
+
+					totalControlPoints.push_back(pair);
 				}
 			}
 

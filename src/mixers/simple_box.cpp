@@ -1,6 +1,11 @@
 #include "mix_match.h"
 #include "mixers/simple_box.h"
 
+SimpleBox::SimpleBox()
+{
+	this->name = "simple box";
+}
+
 Data* SimpleBox::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;

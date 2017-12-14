@@ -2,6 +2,11 @@
 #include "mixers/intersection_box.h"
 #include <iostream>
 
+IntersectionBox::IntersectionBox()
+{
+	this->name = "intersection box";
+}
+
 Data* IntersectionBox::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;

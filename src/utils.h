@@ -6,9 +6,12 @@
 #include <Eigen/Sparse>
 #include <Eigen/Geometry>
 
-typedef std::pair<Eigen::Matrix3f, Eigen::Vector3f> TransformType;
-typedef std::vector<Eigen::Vector3f>                PointsType;
+// typedef std::pair<Eigen::Matrix3f, Eigen::Vector3f> TransformType;
+// typedef std::vector<Eigen::Vector3f>                PointsType;
 
 class Utils {
-	static TransformType computeRigidTransform(const PointsType& src, const PointsType& dst);
+public:
+	static std::pair<Eigen::Matrix3f, Eigen::Vector3f> computeRigidTransformWithoutScale(const std::vector<Eigen::Vector3f>& src, const std::vector<Eigen::Vector3f>& dst);
+	static std::pair<Eigen::Matrix3f, Eigen::Vector3f> computeRigidTransform(const std::vector<Eigen::Vector3f>& src, const std::vector<Eigen::Vector3f>& dst);
+	std::string generateRandomString(size_t length);
 };

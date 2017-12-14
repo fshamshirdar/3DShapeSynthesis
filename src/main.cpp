@@ -1,4 +1,5 @@
 #include <string.h>
+#include <ctime>
 #include <GL/glui.h>
 #include "smf_parser.h"
 #include "data.h"
@@ -8,11 +9,13 @@
 #include "control_points/hull_grid_points.h"
 #include "control_points/box_intersection_points.h"
 #include "control_points/box_intersection_target_points.h"
+#include "control_points/missing_connecting_points.h"
 #include "mixers/knn_weighted_interpolation.h"
 #include "mixers/simple_box.h"
 #include "mixers/intersection_box.h"
 #include "mixers/missing_part.h"
 #include "mixers/missing_intersection_part.h"
+#include "mixers/rigid_transform.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -72,6 +75,7 @@ std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 #define DISABLE_ID           301
 #define SHOW_ID              302
 #define HIDE_ID              303
+#define NEXT_ID              304
 /********** Miscellaneous global variables **********/
 
 GLfloat light0_ambient[] =  {0.1f, 0.1f, 0.3f, 1.0f};
@@ -98,6 +102,12 @@ void control_callback(int control)
     data = parser->load(filename);
     // parser->simplify(50);
     glutPostRedisplay();
+  }
+  else if (control == NEXT_ID) {
+	data = mixer->mix();
+  	controlPoints = mixer->totalControlPoints;
+  	std::cout << "num of control points: " << controlPoints.size() << std::endl;
+  	glutPostRedisplay();
   }
   else if (control == LIGHT0_ENABLED_ID) {
     if ( light0_enabled ) {
@@ -490,34 +500,41 @@ void myGlutDisplay()
 
 int main(int argc, char* argv[])
 {
+  std::srand ( unsigned ( std::time(0) ) );
+
   parser = new SMFParser();
-  data2 = parser->load("ChairA.obj");
-  data = parser->load("SimpleChair1.obj");
-//  data2 = parser->load("SwivelChair04.obj");
-//  data2 = parser->load("FancyChair.obj");
-//  data2 = parser->load("SwivelChair04.obj");
-//  data2 = parser->load("chair0370.obj");
-//  data2 = parser->load("SingleLegChair.obj");
-//  data = parser->load("chair0003.obj");
-  data1 = data;
+  mixer = new MixMatch();
 
-  // Data::Part* leg = data1->findPartByType(Data::Part::Type::LEG);
+//  mixer->datas.push_back(parser->load("chair0003.obj"));
+  mixer->datas.push_back(parser->load("chair0370.obj"));
+  mixer->datas.push_back(parser->load("FancyChair.obj"));
+  mixer->datas.push_back(parser->load("newChair.obj"));
+  mixer->datas.push_back(parser->load("Woodchair2.obj"));
+  mixer->datas.push_back(parser->load("chair0012.obj"));
+  mixer->datas.push_back(parser->load("ChairA.obj"));
+  mixer->datas.push_back(parser->load("MetalChair01.obj"));
+  mixer->datas.push_back(parser->load("SimpleChair1.obj"));
+  mixer->datas.push_back(parser->load("SwivelChair04.obj"));
+  mixer->datas.push_back(parser->load("SwivelChair03.obj"));
+  mixer->datas.push_back(parser->load("swivelChair1.obj"));
+  mixer->datas.push_back(parser->load("SingleLegChair.obj"));
 
-  //ControlPointsMiner* controlPointsMiner;
-  std::vector<ControlPointsMiner*> controlPointsMiners;
-//  controlPointsMiners.push_back(new BoxIntersectionTargetPoints());
-  controlPointsMiners.push_back(new HullGridPoints(10, 0, 10));
-//  controlPointsMiners.push_back(new EightPoints());
-  controlPointsMiners.push_back(new BoxIntersectionPoints());
-
-  //mixer = new KNNWeightedInterpolation(controlPointsMiners, 8, 0.8);
-  //mixer = new SimpleBox();
-  //mixer = new IntersectionBox();
-  //mixer = new MissingPart();
-  mixer = new MissingIntersectionPart();
-  data = mixer->mix(data1, data2);
+  data = mixer->mix();
   controlPoints = mixer->totalControlPoints;
+  std::cout << "num of control points: " << controlPoints.size() << std::endl;
+
+/*
+  Data::Part* spindle = data->findPartByType(Data::Part::Type::LEG);
   data->findPartsNeighborsByBoxIntersection();
+
+  for (auto it=spindle->neighbors.begin(); it!=spindle->neighbors.end(); it++) {
+	  for (auto vit=(*it)->vertices.begin(); vit!=(*it)->vertices.end(); vit++) {
+		  ControlPointsMiner::ControlPoint* point = new ControlPointsMiner::ControlPoint();
+		  point->vertex = (*vit);
+		  controlPoints.push_back(point);
+	  }
+  }
+*/
 
 
 
@@ -585,6 +602,7 @@ int main(int argc, char* argv[])
   new GLUI_StaticText(glui, "");
 
   new GLUI_Button(glui, "Save", 0, control_callback);
+  new GLUI_Button(glui, "Next", NEXT_ID, control_callback);
 
   new GLUI_StaticText(glui, "");
  

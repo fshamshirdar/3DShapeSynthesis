@@ -1,5 +1,13 @@
 #include "data.h"
+#include "smf_parser.h"
 #include <iostream>
+
+Data* Data::clone()
+{
+	SMFParser* parser = new SMFParser();
+	Data* newData = parser->load(path);
+	return newData;
+}
 
 Data::Part* Data::findPartByType(Data::Part::Type type)
 {
@@ -16,9 +24,9 @@ Data::Part* Data::findPartByType(Data::Part::Type type)
 	if (type == Data::Part::Type::LEG) {
 		part->type = Data::Part::Type::TWO_LEGGED;
 		Eigen::AlignedBox3f boundingBox;
-		for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+		for (int i = Data::Part::Type::LEG_FRONT_SPINDLE; i <= Data::Part::Type::LEG_RIGHT_SPINDLE; i++) {
 			Data::Part* child = findPartByType((Data::Part::Type)(i));
-			if (! child) {
+			if (child->regions.size() == 0) {
 				continue;
 			}
 
@@ -58,7 +66,7 @@ void Data::replacePartByType(Data::Part* part)
 			if (part->type == Data::Part::Type::FOUR_LEGGED ||
 			    part->type == Data::Part::Type::SINGLE_LEGGED ||
 			    part->type == Data::Part::Type::TWO_LEGGED) {
-				for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+				for (int i = Data::Part::Type::LEG_FRONT_SPINDLE; i <= Data::Part::Type::LEG_RIGHT_SPINDLE; i++) {
 					deletePartByType((Data::Part::Type)(i));
 				}
 			}
@@ -212,23 +220,86 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 	intersection = Eigen::AlignedBox3f(newMin, newMax);
 
 	for (auto r1it = part1->regions.begin(); r1it != part1->regions.end(); r1it++) {
-		for (auto r1vit = (*r1it)->vertices.begin(); r1vit != (*r1it)->vertices.end(); r1vit++) {
-			Eigen::Vector4f pos = (*r1vit)->pos;
-			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
-			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
-				part1->addVertexToPartIntersection(part2, (*r1vit), true);
-				part2->addVertexToPartIntersection(part1, (*r1vit), false);
+		for (auto r2it = part2->regions.begin(); r2it != part2->regions.end(); r2it++) {
+			Eigen::AlignedBox3f intersection = (*r1it)->boundingBox.intersection((*r2it)->boundingBox);
+			Eigen::Vector3f min = intersection.min();
+			Eigen::Vector3f max = intersection.max();
+			Eigen::Vector3f mid = (max + min) / 2.;
+			Eigen::Vector3f newMin = (min - mid) * scale + mid;
+			Eigen::Vector3f newMax = (max - mid) * scale + mid;
+			newMin = (newMin - mid) - translation + mid;
+			newMax = (newMax - mid) + translation + mid;
+			intersection = Eigen::AlignedBox3f(newMin, newMax);
+
+			if (intersection.isEmpty()) {
+				continue;
 			}
-		}
-	}
-	for (auto r2it = part2->regions.begin(); r2it != part2->regions.end(); r2it++) {
-		for (auto r2vit = (*r2it)->vertices.begin(); r2vit != (*r2it)->vertices.end(); r2vit++) {
-			Eigen::Vector4f pos = (*r2vit)->pos;
-			if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
-			    pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
-				part2->addVertexToPartIntersection(part1, (*r2vit), true);
-				part1->addVertexToPartIntersection(part2, (*r2vit), false);
+
+			for (auto r1vit = (*r1it)->vertices.begin(); r1vit != (*r1it)->vertices.end(); r1vit++) {
+				Eigen::Vector4f pos = (*r1vit)->pos;
+				if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
+						pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
+					for (auto r2fit = (*r2it)->faces.begin(); r2fit != (*r2it)->faces.end(); r2fit++) {
+						float dist = (pos - (*r2fit)->v1->pos).dot((*r2fit)->normal);
+						Eigen::Vector4f point = pos - (dist * (*r2fit)->normal);
+						Eigen::Vector3f point3 = point.head<3>();
+						if (isPointWithinTriangle((*r2fit), point3)) {
+							if (fabs(dist) < 0.005) {
+								part1->addVertexToPartIntersection(part2, (*r1vit), true);
+								part2->addVertexToPartIntersection(part1, (*r1vit), false);
+
+								break;
+							}
+						}
+					}
+
+//					part1->addVertexToPartIntersection(part2, (*r1vit), true);
+//					part2->addVertexToPartIntersection(part1, (*r1vit), false);
+				}
 			}
+			for (auto r2vit = (*r2it)->vertices.begin(); r2vit != (*r2it)->vertices.end(); r2vit++) {
+				Eigen::Vector4f pos = (*r2vit)->pos;
+				if (pos[0] > newMin[0] && pos[1] > newMin[1] && pos[2] > newMin[2] &&
+						pos[0] < newMax[0] && pos[1] < newMax[1] && pos[2] < newMax[2]) {
+					for (auto r1fit = (*r1it)->faces.begin(); r1fit != (*r1it)->faces.end(); r1fit++) {
+						float dist = (pos - (*r1fit)->v1->pos).dot((*r1fit)->normal);
+						Eigen::Vector4f point = pos - (dist * (*r1fit)->normal);
+						Eigen::Vector3f point3 = point.head<3>();
+						if (isPointWithinTriangle((*r1fit), point3)) {
+							if (fabs(dist) < 0.005) {
+								part2->addVertexToPartIntersection(part1, (*r2vit), true);
+								part1->addVertexToPartIntersection(part2, (*r2vit), false);
+
+								break;
+							}
+						}
+					}
+
+//					part2->addVertexToPartIntersection(part1, (*r2vit), true);
+//					part1->addVertexToPartIntersection(part2, (*r2vit), false);
+				}
+			}
+			/*
+			   for (auto r1it = part1->regions.begin(); r1it != part1->regions.end(); r1it++) {
+			   for (auto r1fit = (*r1it)->faces.begin(); r1fit != (*r1it)->faces.end(); r1fit++) {
+			   float dist = (pos - (*r1fit)->v1->pos).dot((*r1fit)->normal);
+			   Eigen::Vector4f point = pos - (dist * (*r1fit)->normal);
+			   Eigen::Vector3f point3 = point.head<3>();
+			   if (isPointWithinTriangle((*r1fit), point3)) {
+			   if (fabs(dist) < 0.005) {
+			   part1->addVertexToPartIntersection(part2, (*r2vit), false);
+			   part2->addVertexToPartIntersection(part1, (*r2vit), true);
+
+			   r1it = part1->regions.end();
+			   break;
+			   }
+			   }
+			   }
+			   }
+			 */
+
+			//				part2->addVertexToPartIntersection(part1, (*r2vit), true);
+			//				part1->addVertexToPartIntersection(part2, (*r2vit), false);
 		}
 	}
 }

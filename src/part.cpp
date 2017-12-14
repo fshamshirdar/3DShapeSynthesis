@@ -42,7 +42,7 @@ bool Data::Part::isChild(Data::Part* parent)
 	if (parent->type == Data::Part::Type::FOUR_LEGGED ||
 	    parent->type == Data::Part::Type::SINGLE_LEGGED ||
 	    parent->type == Data::Part::Type::TWO_LEGGED) {
-		for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+		for (int i = Data::Part::Type::LEG_FRONT_SPINDLE; i <= Data::Part::Type::LEG_RIGHT_SPINDLE; i++) {
 			if (type == (Data::Part::Type)(i)) {
 				return true;
 			}
@@ -57,7 +57,7 @@ bool Data::Part::isParent(Data::Part* child)
 	if (type == Data::Part::Type::FOUR_LEGGED ||
 	    type == Data::Part::Type::SINGLE_LEGGED ||
 	    type == Data::Part::Type::TWO_LEGGED) {
-		for (int i = Data::Part::Type::LEG_SPINDLE; i <= Data::Part::Type::LEG_BACK_LEG; i++) {
+		for (int i = Data::Part::Type::LEG_FRONT_SPINDLE; i <= Data::Part::Type::LEG_RIGHT_SPINDLE; i++) {
 			if (child->type == (Data::Part::Type)(i)) {
 				return true;
 			}
@@ -142,6 +142,27 @@ void Data::Part::translate(Eigen::Vector3f translate)
 			vertex->pos[0] = (vertex->pos[0] + translate[0]);
 			vertex->pos[1] = (vertex->pos[1] + translate[1]);
 			vertex->pos[2] = (vertex->pos[2] + translate[2]);
+			vertex->pos[3] = 1;
+
+			region->recalculateBoundingBox(vertex);
+			recalculateBoundingBox(vertex);
+		}
+	}
+}
+
+void Data::Part::transform(std::pair<Eigen::Matrix3f, Eigen::Vector3f> transformation)
+{
+	resetBoundingBox();
+	for (auto rit = regions.begin(); rit != regions.end(); rit++) {
+		Data::Region* region = (*rit);
+		region->resetBoundingBox();
+		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
+			Data::Vertex* vertex = (*vit);
+			
+			Eigen::Vector3f newPos = transformation.first * vertex->pos.head<3>() + transformation.second;
+			vertex->pos[0] = newPos[0];
+			vertex->pos[1] = newPos[1];
+			vertex->pos[2] = newPos[2];
 			vertex->pos[3] = 1;
 
 			region->recalculateBoundingBox(vertex);

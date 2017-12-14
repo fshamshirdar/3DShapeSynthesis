@@ -6,6 +6,7 @@
 
 KNNWeightedInterpolation::KNNWeightedInterpolation(std::vector<ControlPointsMiner*> miners, int K, float maxDist) : miners(miners), K(K), maxDist(maxDist)
 {
+	this->name = "knn";
 }
 
 Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
@@ -14,10 +15,10 @@ Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
 
 	//Data::Part* refBack = chair2->findPartByType(Data::Part::SEAT_SHEET);
 	//Data::Part* targetBack = chair1->findPartByType(Data::Part::SEAT_SHEET);
-	//Data::Part* refBack = chair2->findPartByType(Data::Part::BACK_SHEET);
-	//Data::Part* targetBack = chair1->findPartByType(Data::Part::BACK_SHEET);
-	Data::Part* refBack = chair2->findPartByType(Data::Part::FOUR_LEGGED);
-	Data::Part* targetBack = chair1->findPartByType(Data::Part::FOUR_LEGGED);
+	Data::Part* refBack = chair2->findPartByType(Data::Part::BACK_SHEET);
+	Data::Part* targetBack = chair1->findPartByType(Data::Part::BACK_SHEET);
+//	Data::Part* refBack = chair2->findPartByType(Data::Part::LEG);
+//	Data::Part* targetBack = chair1->findPartByType(Data::Part::LEG);
 	refBack = mixPart(refBack, targetBack);
 	output->replacePartByType(refBack);
 
@@ -27,13 +28,30 @@ Data* KNNWeightedInterpolation::mix(Data* chair1, Data* chair2)
 Data::Part* KNNWeightedInterpolation::mixPart(Data::Part* ref, Data::Part* target)
 {
 	std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
+	std::pair<Eigen::Matrix3f, Eigen::Vector3f> transformation;
+	std::vector<Eigen::Vector3f> sourcePoints, targetPoints;
 	for (auto mit = miners.begin(); mit != miners.end(); mit++)
 	{
 		std::vector<ControlPointsMiner::ControlPoint*> minerControlPoints;
 		minerControlPoints = (*mit)->findControlPoints(ref, target);
+		for (auto cit = minerControlPoints.begin(); cit != minerControlPoints.end(); cit++) {
+			sourcePoints.push_back((*cit)->vertex->pos.head<3>()); 
+			targetPoints.push_back((*cit)->pair->pos.head<3>()); 
+		}
+
 		controlPoints.insert(controlPoints.end(), minerControlPoints.begin(), minerControlPoints.end());
 		totalControlPoints.insert(totalControlPoints.end(), minerControlPoints.begin(), minerControlPoints.end());
 	}
+
+/*
+	// Rigid transform first
+	if (sourcePoints.size() > 3) {
+		transformation = Utils::computeRigidTransform(sourcePoints, targetPoints);
+		ref->transform(transformation);
+	}
+	ref->recalculateNormals();
+*/
+
 
 	Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
 	ref->scale(target->boundingBox, baseScale);

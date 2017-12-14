@@ -2,6 +2,11 @@
 #include "mixers/missing_part.h"
 #include <iostream>
 
+MissingPart::MissingPart()
+{
+	this->name = "missing part";
+}
+
 Data* MissingPart::mix(Data* chair1, Data* chair2)
 {
 	Data* output = chair1;
