@@ -179,6 +179,7 @@ public:
 public:
 	// Parts
 	Data* clone();
+	void save();
 	Data::Part* findPartByType(Part::Type type);
 	void addPart(Data::Part* part);
 	void addParts(Data* data);

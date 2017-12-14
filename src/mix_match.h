@@ -13,6 +13,11 @@ public:
 	Data* mixBack(Data* data1, Data* data2);
 	Data* mixHandles(Data* data1, Data* data2);
 	Data* mixLeg(Data* data1, Data* data2);
+	Data* mixFrontLeg(Data* data1, Data* data2);
+	Data* mixBackLeg(Data* data1, Data* data2);
+	Data* mixBar(Data* data1, Data* data2);
+	Data* mixBase(Data* data1, Data* data2);
+	Data* mixBranch(Data* data1, Data* data2);
 
 public:
 	std::string name;

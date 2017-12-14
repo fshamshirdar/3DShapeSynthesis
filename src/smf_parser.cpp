@@ -94,7 +94,7 @@ Data* SMFParser::load(const std::string &filename)
 			k++;
 			previousRegion = currentRegion;
 			currentRegion = new Data::Region();
-			std::cout << partType << " " << previousRegion->name << std::endl;
+			// std::cout << partType << " " << previousRegion->name << std::endl;
 			break;
 		case 'f':
 			{

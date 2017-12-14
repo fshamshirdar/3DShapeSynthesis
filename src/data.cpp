@@ -1,6 +1,32 @@
 #include "data.h"
 #include "smf_parser.h"
 #include <iostream>
+#include <fstream>
+
+void Data::save()
+{
+	std::ofstream file;
+	file.open(path);
+	int id = 0;
+	for ( auto pit = parts.begin(); pit != parts.end(); pit++ ) {
+		if ((*pit)->type >= Data::Part::Type::LEG) { // do not store virtual parts
+			continue;
+		}
+
+		for(auto rit = (*pit)->regions.begin(); rit != (*pit)->regions.end(); rit++ ) {
+			for(auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++ ) { 
+				file << "v " << (*vit)->pos[0] << " " << (*vit)->pos[1] << " " <<(*vit)->pos[2] << std::endl;
+				(*vit)->id = id;
+				id ++;
+			}
+			file << "g " << (*rit)->name << " " << (*pit)->type << std::endl;
+			for(auto fit = (*rit)->faces.begin(); fit != (*rit)->faces.end(); fit ++) {
+				file << "f " << (*fit)->v1->id+1 << " " << (*fit)->v2->id+1 << " " << (*fit)->v3->id+1 << std::endl;
+			}  
+		}
+	} 
+	file.close();
+}
 
 Data* Data::clone()
 {
@@ -60,28 +86,40 @@ void Data::addParts(Data* data)
 
 void Data::replacePartByType(Data::Part* part)
 {
-	for (int i=0; i < parts.size(); i++) {
-		if (parts[i]->type == part->type) {
-			parts[i] = part;
-			if (part->type == Data::Part::Type::FOUR_LEGGED ||
-			    part->type == Data::Part::Type::SINGLE_LEGGED ||
-			    part->type == Data::Part::Type::TWO_LEGGED) {
-				for (int i = Data::Part::Type::LEG_FRONT_SPINDLE; i <= Data::Part::Type::LEG_RIGHT_SPINDLE; i++) {
-					deletePartByType((Data::Part::Type)(i));
-				}
+	if (part->type == Data::Part::Type::FOUR_LEGGED ||
+	    part->type == Data::Part::Type::SINGLE_LEGGED ||
+	    part->type == Data::Part::Type::TWO_LEGGED) {
+		for (int i = Data::Part::Type::LEG_FRONT_SPINDLE; i <= Data::Part::Type::LEG_RIGHT_SPINDLE; i++) {
+			Data::Part* targetPart = part->parent->findPartByType((Data::Part::Type)(i));
+			if (targetPart->regions.size() == 0) {
+				deletePartByType((Data::Part::Type)(i));
+				continue;
 			}
-			return;
+			replacePartByType(targetPart);
+		}
+		deletePartByType(Data::Part::Type::FOUR_LEGGED);
+		deletePartByType(Data::Part::Type::SINGLE_LEGGED);
+		deletePartByType(Data::Part::Type::TWO_LEGGED);
+	} else {
+		for (int i=0; i < parts.size(); i++) {
+			if (parts[i]->type == part->type) {
+				parts[i] = part;
+				return;
+			}
 		}
 	}
 
-	findPartByType(part->type);
-	replacePartByType(part);
+	//findPartByType(part->type);
+	//replacePartByType(part);
 }
 
 void Data::deletePartByType(Data::Part::Type type)
-{	for (auto it=parts.begin(); it != parts.end(); it++) {
+{
+	for (auto it=parts.begin(); it != parts.end();) {
 		if ((*it)->type == type) {
 			it = parts.erase(it);
+		} else {
+			it ++;
 		}
 	}
 }
@@ -207,7 +245,7 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 {
 	float scale = 1.;
 	Eigen::Vector3f translation;
-	translation << .005, .005, .005;
+	translation << .015, .015, .015;
 
 	Eigen::AlignedBox3f intersection = part1->boundingBox.intersection(part2->boundingBox);
 	Eigen::Vector3f min = intersection.min();
@@ -244,7 +282,7 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 						Eigen::Vector4f point = pos - (dist * (*r2fit)->normal);
 						Eigen::Vector3f point3 = point.head<3>();
 						if (isPointWithinTriangle((*r2fit), point3)) {
-							if (fabs(dist) < 0.005) {
+							if (fabs(dist) < 0.015) {
 								part1->addVertexToPartIntersection(part2, (*r1vit), true);
 								part2->addVertexToPartIntersection(part1, (*r1vit), false);
 
@@ -266,7 +304,7 @@ void Data::findRegionsNeighborsByBoxIntersection(Data::Part* part1, Data::Part* 
 						Eigen::Vector4f point = pos - (dist * (*r1fit)->normal);
 						Eigen::Vector3f point3 = point.head<3>();
 						if (isPointWithinTriangle((*r1fit), point3)) {
-							if (fabs(dist) < 0.005) {
+							if (fabs(dist) < 0.015) {
 								part2->addVertexToPartIntersection(part1, (*r2vit), true);
 								part1->addVertexToPartIntersection(part2, (*r2vit), false);
 

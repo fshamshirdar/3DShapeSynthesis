@@ -11,7 +11,7 @@ bool Data::Vertex::calculateVertexNormal()
 	Data::W_edge *edge = e0;
 	do {
 		if (! edge) {
-			std::cout << "break" << std::endl;
+//			std::cout << "break" << std::endl;
 			return false;
 		}
 		// std::cout << edge->start->id+1 << " " << edge->end->id+1 << std::endl;

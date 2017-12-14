@@ -76,6 +76,7 @@ std::vector<ControlPointsMiner::ControlPoint*> controlPoints;
 #define SHOW_ID              302
 #define HIDE_ID              303
 #define NEXT_ID              304
+#define SAVE_ID              305
 /********** Miscellaneous global variables **********/
 
 GLfloat light0_ambient[] =  {0.1f, 0.1f, 0.3f, 1.0f};
@@ -108,6 +109,10 @@ void control_callback(int control)
   	controlPoints = mixer->totalControlPoints;
   	std::cout << "num of control points: " << controlPoints.size() << std::endl;
   	glutPostRedisplay();
+  }
+  else if (control == SAVE_ID) {
+	data->save();
+	mixer->datas.push_back(data);
   }
   else if (control == LIGHT0_ENABLED_ID) {
     if ( light0_enabled ) {
@@ -273,6 +278,7 @@ void draw_control_points(std::vector<ControlPointsMiner::ControlPoint*> points, 
 	glScalef( scale, scale, scale );
 
 	glPointSize(10);
+	glColor3fv(color);
 	glBegin(GL_POINTS);
 	for (auto it=points.begin(); it != points.end(); it++) {
 		if ((*it)->vertex) {
@@ -372,7 +378,7 @@ void myGlutDisplay()
   glScalef(scale, scale, scale);
 
   if (data != NULL) {
-	  GLfloat cpcolor[3] = {1.0, 1.0, 0.0};
+	  GLfloat cpcolor[3] = {1.0, 0.0, 0.0};
   	  draw_control_points(controlPoints, cpcolor);
 
 	  draw_axes(.52f);
@@ -388,10 +394,10 @@ void myGlutDisplay()
 			  draw_bounding_box((*nit)->boundingBox, ncolor);
 		  }
 		  GLfloat pcolor[3] = {0.0, 1.0, 0.0};
-		  draw_bounding_box((*pit)->boundingBox, pcolor);
+//		  draw_bounding_box((*pit)->boundingBox, pcolor);
 		  for(auto rit = (*pit)->regions.begin(); rit != (*pit)->regions.end(); rit++) {
 			  GLfloat rcolor[3] = {1.0, 0.0, 0.0};
-			  draw_bounding_box((*rit)->boundingBox, rcolor);
+//			  draw_bounding_box((*rit)->boundingBox, rcolor);
 			  for(auto it = (*rit)->faces.begin(); it != (*rit)->faces.end(); it++) {
 				  if (! (*it)->v1 || ! (*it)->v2 || ! (*it)->v3) {
 					  continue;
@@ -506,6 +512,7 @@ int main(int argc, char* argv[])
   mixer = new MixMatch();
 
 //  mixer->datas.push_back(parser->load("chair0003.obj"));
+/*
   mixer->datas.push_back(parser->load("chair0370.obj"));
   mixer->datas.push_back(parser->load("FancyChair.obj"));
   mixer->datas.push_back(parser->load("newChair.obj"));
@@ -518,16 +525,35 @@ int main(int argc, char* argv[])
   mixer->datas.push_back(parser->load("SwivelChair03.obj"));
   mixer->datas.push_back(parser->load("swivelChair1.obj"));
   mixer->datas.push_back(parser->load("SingleLegChair.obj"));
-
-  data = mixer->mix();
-  controlPoints = mixer->totalControlPoints;
-  std::cout << "num of control points: " << controlPoints.size() << std::endl;
+*/
 
 /*
-  Data::Part* spindle = data->findPartByType(Data::Part::Type::LEG);
-  data->findPartsNeighborsByBoxIntersection();
+  mixer->datas.push_back(parser->load("chair1.obj"));
+  mixer->datas.push_back(parser->load("chair2.obj"));
+  mixer->datas.push_back(parser->load("chair3.obj"));
+  mixer->datas.push_back(parser->load("chair4.obj"));
+  mixer->datas.push_back(parser->load("chair5.obj"));
+  mixer->datas.push_back(parser->load("chair6.obj"));
+  mixer->datas.push_back(parser->load("chair7.obj"));
+  mixer->datas.push_back(parser->load("chair8.obj"));
+*/
 
-  for (auto it=spindle->neighbors.begin(); it!=spindle->neighbors.end(); it++) {
+
+/*
+  mixer->datas.push_back(parser->load("NEW_swivelChair1.obj_FancyChair.obj_79"));
+  mixer->datas.push_back(parser->load("NEW_Woodchair2.obj_ChairA.obj_768"));
+  mixer->datas.push_back(parser->load("NEW_SwivelChair04.obj_SimpleChair1.obj_713"));
+*/
+
+  data = parser->load("chair1.obj");
+  Data* data2 = parser->load("chair3.obj");
+  Data::Part* back1 = data->findPartByType(Data::Part::Type::BACK_SHEET);
+  Data::Part* back2 = data2->findPartByType(Data::Part::Type::BACK_SHEET);
+ 
+  ControlPointsMiner* miner = new HullGridPoints(10, 0, 10);
+  controlPoints = miner->findControlPoints(back1, back2);
+/*
+  for (auto it=back->neighbors.begin(); it!=back->neighbors.end(); it++) {
 	  for (auto vit=(*it)->vertices.begin(); vit!=(*it)->vertices.end(); vit++) {
 		  ControlPointsMiner::ControlPoint* point = new ControlPointsMiner::ControlPoint();
 		  point->vertex = (*vit);
@@ -601,7 +627,7 @@ int main(int argc, char* argv[])
 
   new GLUI_StaticText(glui, "");
 
-  new GLUI_Button(glui, "Save", 0, control_callback);
+  new GLUI_Button(glui, "Save", SAVE_ID, control_callback);
   new GLUI_Button(glui, "Next", NEXT_ID, control_callback);
 
   new GLUI_StaticText(glui, "");
