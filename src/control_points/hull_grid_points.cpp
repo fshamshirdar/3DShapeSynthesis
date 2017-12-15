@@ -10,7 +10,20 @@ HullGridPoints::HullGridPoints(int nx, int ny, int nz) : nx(nx), ny(ny), nz(nz)
 
 std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints(Data::Part* ref, Data::Part* target)
 {
-	scaleToTarget(ref, target);
+//	scaleToTarget(ref, target);
+
+
+	Data::Vertex* vertex = new Data::Vertex;
+
+	Data::Face* face = new Data::Face;
+	face->v1 = new Data::Vertex;
+	face->v2 = new Data::Vertex;
+	face->v3 = new Data::Vertex;
+
+	face->v1->pos << 0, 0, 0, 1;
+	face->v2->pos << 1, 0, 0, 1;
+	face->v3->pos << 0, 1, 0, 1;
+	
 
 	HullGridPoints::HullGridPoint*** refPoints;
 	HullGridPoints::HullGridPoint*** targetPoints;
@@ -19,7 +32,9 @@ std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints
 
 	// XZ
 	if (nx != 0 && nz != 0) {
+		std::cout << "first" << std::endl;
 		refPoints = findXZHullPoints(ref, nx, nz);
+		std::cout << "second" << std::endl;
 		targetPoints = findXZHullPoints(target, nx, nz);
 		std::vector<ControlPointsMiner::ControlPoint*> controlPointsXZ = findCorrespondingPoints(refPoints, targetPoints, nx, nz);
 		controlPoints.insert(controlPoints.end(), controlPointsXZ.begin(), controlPointsXZ.end());
@@ -38,7 +53,7 @@ std::vector<ControlPointsMiner::ControlPoint*> HullGridPoints::findControlPoints
 		std::vector<ControlPointsMiner::ControlPoint*> controlPointsYZ = findCorrespondingPoints(refPoints, targetPoints, ny, nz);
 		controlPoints.insert(controlPoints.end(), controlPointsYZ.begin(), controlPointsYZ.end());
 	}
-	unscaleToRef(ref, target);
+//	unscaleToRef(ref, target);
 
 	return controlPoints;
 }
@@ -83,6 +98,45 @@ HullGridPoints::HullGridPoint*** HullGridPoints::findXZHullPoints(Data::Part* pa
 	float cellWidth = width / n;
 	float cellHeight = height / m;
 
+	for (int i=0; i<n; i++) {
+		for (int j=0; j<m; j++) {
+			Eigen::Vector3f frontMid;
+			frontMid << i * cellWidth + cellWidth / 2., min[1], j * cellHeight + cellHeight / 2.;
+			Eigen::Vector3f backMid;
+			backMid << i * cellWidth + cellWidth / 2., max[1], j * cellHeight + cellHeight / 2.;
+
+			for (auto rit = part->regions.begin(); rit != part->regions.end(); rit++) {
+				for (auto fit = (*rit)->faces.begin(); fit != (*rit)->faces.end(); fit++) {
+					Eigen::Vector3f front;
+					if (RayIntersectsTriangle(frontMid, backMid, (*fit), front)) {
+						float dist = (front - frontMid).norm();
+						if (! points[0][i][j].vertex || dist < points[0][i][j].dist) {
+							points[0][i][j].vertex = new Data::Vertex;
+							points[0][i][j].vertex->pos[0] = front[0];
+							points[0][i][j].vertex->pos[1] = front[1];
+							points[0][i][j].vertex->pos[2] = front[2];
+							points[0][i][j].dist = dist;
+							std::cout << "here" << std::endl;
+						}
+					}
+					Eigen::Vector3f back;
+					if (RayIntersectsTriangle(backMid, frontMid, (*fit), back)) {
+						float dist = (back - backMid).norm();
+						if (! points[1][i][j].vertex || dist < points[1][i][j].dist) {
+							points[1][i][j].vertex = new Data::Vertex;
+							points[1][i][j].vertex->pos[0] = back[0];
+							points[1][i][j].vertex->pos[1] = back[1];
+							points[1][i][j].vertex->pos[2] = back[2];
+							points[1][i][j].dist = dist;
+							std::cout << "here" << std::endl;
+						}
+					}
+				}
+			}
+		}
+	}
+
+/*
 	for (auto rit = part->regions.begin(); rit != part->regions.end(); rit++) {
 		Data::Region* region = (*rit);
 		for (auto vit = (*rit)->vertices.begin(); vit != (*rit)->vertices.end(); vit++) {
@@ -91,6 +145,7 @@ HullGridPoints::HullGridPoint*** HullGridPoints::findXZHullPoints(Data::Part* pa
 			int j = int((vertex->pos[2] - min[2]) / cellHeight);
 			i = (i >= n) ? n-1 : i;
 			j = (j >= m) ? m-1 : j;
+
 			Eigen::Vector4f frontMid;
 			Eigen::Vector4f backMid;
 			float dist;
@@ -110,7 +165,7 @@ HullGridPoints::HullGridPoint*** HullGridPoints::findXZHullPoints(Data::Part* pa
 			}
 		}
 	}
-
+*/
 	return points;
 }
 
@@ -212,4 +267,55 @@ HullGridPoints::HullGridPoint*** HullGridPoints::findYZHullPoints(Data::Part* pa
 	}
 
 	return points;
+}
+
+bool HullGridPoints::RayIntersectsTriangle(Eigen::Vector3f rayOrigin, 
+                           Eigen::Vector3f rayTarget, 
+                           Data::Face* face,
+                           Eigen::Vector3f& outIntersectionPoint)
+{
+	const float EPSILON = 0.0000001; 
+	Eigen::Vector3f rayVector = rayTarget - rayOrigin;
+	float dist = rayVector.norm();
+	// rayVector[0] /= dist;
+	// rayVector[1] /= dist;
+	// rayVector[2] /= dist;
+	Eigen::Vector3f vertex1 = face->v1->pos.head<3>();
+	Eigen::Vector3f vertex2 = face->v2->pos.head<3>();
+	Eigen::Vector3f vertex3 = face->v3->pos.head<3>();
+	Eigen::Vector3f edge1, edge2, h, s, q;
+	float a,f,u,v;
+	edge1 = vertex2 - vertex1;
+	edge2 = vertex3 - vertex1;
+	// h = rayVector.crossProduct(edge2);
+	h = rayVector.cross(edge2);
+	h = face->normal.head<3>();
+	// a = edge1.dotProduct(h);
+	a = edge1.dot(h);
+	if (a > -EPSILON && a < EPSILON) {
+		return false;
+	}
+	f = 1/a;
+	s = rayOrigin - vertex1;
+	// u = f * (s.dotProduct(h));
+	u = f * (s.dot(h));
+	if (u < 0.0 || u > 1.0)
+		return false;
+	// q = s.crossProduct(edge1);
+	q = s.cross(edge1);
+	// v = f * rayVector.dotProduct(q);
+	v = f * rayVector.dot(q);
+
+	if (v < 0.0 || u + v > 1.0)
+		return false;
+	// At this stage we can compute t to find out where the intersection point is on the line.
+	// float t = f * edge2.dotProduct(q);
+	float t = f * edge2.dot(q);
+	if (t > EPSILON) // ray intersection
+	{
+		outIntersectionPoint = rayOrigin + rayVector * t; 
+		return true;
+	} else { // This means that there is a line intersection but not a ray intersection.
+		return false;
+	}
 }

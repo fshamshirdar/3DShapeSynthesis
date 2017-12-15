@@ -538,7 +538,6 @@ int main(int argc, char* argv[])
   mixer->datas.push_back(parser->load("chair8.obj"));
 */
 
-
 /*
   mixer->datas.push_back(parser->load("NEW_swivelChair1.obj_FancyChair.obj_79"));
   mixer->datas.push_back(parser->load("NEW_Woodchair2.obj_ChairA.obj_768"));
@@ -552,6 +551,9 @@ int main(int argc, char* argv[])
  
   ControlPointsMiner* miner = new HullGridPoints(10, 0, 10);
   controlPoints = miner->findControlPoints(back1, back2);
+  std::cout << controlPoints.size() << std::endl;
+  
+
 /*
   for (auto it=back->neighbors.begin(); it!=back->neighbors.end(); it++) {
 	  for (auto vit=(*it)->vertices.begin(); vit!=(*it)->vertices.end(); vit++) {

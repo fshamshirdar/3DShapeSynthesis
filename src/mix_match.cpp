@@ -37,7 +37,6 @@ Data* MixMatch::mix()
 	// Data::Part::Type type = static_cast<Data::Part::Type>((rand() % Data::Part::Type::LEG) + 1);
 	// std::cout << "selected type: " << type << std::endl;
 	int category = rand() % 9;
-	category = 0;
 	std::cout << "selected category: " << category << std::endl;
 
 	switch(category) {
