@@ -53,6 +53,7 @@ Data::Part* KNNWeightedInterpolation::mixPart(Data::Part* ref, Data::Part* targe
 */
 
 
+
 	Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
 	ref->scale(target->boundingBox, baseScale);
 	// Eigen::Vector3f translation = ((target->boundingBox.max() - ref->boundingBox.max()) + (target->boundingBox.max() - ref->boundingBox.max())) / 2.;

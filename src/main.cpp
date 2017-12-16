@@ -7,6 +7,7 @@
 #include "control_points/eight_points.h"
 #include "control_points/closest_connecting_points.h"
 #include "control_points/hull_grid_points.h"
+#include "control_points/hull_grid_rays.h"
 #include "control_points/box_intersection_points.h"
 #include "control_points/box_intersection_target_points.h"
 #include "control_points/missing_connecting_points.h"
@@ -527,7 +528,6 @@ int main(int argc, char* argv[])
   mixer->datas.push_back(parser->load("SingleLegChair.obj"));
 */
 
-/*
   mixer->datas.push_back(parser->load("chair1.obj"));
   mixer->datas.push_back(parser->load("chair2.obj"));
   mixer->datas.push_back(parser->load("chair3.obj"));
@@ -536,7 +536,10 @@ int main(int argc, char* argv[])
   mixer->datas.push_back(parser->load("chair6.obj"));
   mixer->datas.push_back(parser->load("chair7.obj"));
   mixer->datas.push_back(parser->load("chair8.obj"));
-*/
+
+  mixer->datas.push_back(parser->load("NEW__2251"));
+  mixer->datas.push_back(parser->load("NEW__3369"));
+  mixer->datas.push_back(parser->load("NEW__3849"));
 
 /*
   mixer->datas.push_back(parser->load("NEW_swivelChair1.obj_FancyChair.obj_79"));
@@ -544,6 +547,7 @@ int main(int argc, char* argv[])
   mixer->datas.push_back(parser->load("NEW_SwivelChair04.obj_SimpleChair1.obj_713"));
 */
 
+/*
   data = parser->load("chair1.obj");
   Data* data2 = parser->load("chair3.obj");
   Data::Part* back1 = data->findPartByType(Data::Part::Type::BACK_SHEET);
@@ -552,7 +556,7 @@ int main(int argc, char* argv[])
   ControlPointsMiner* miner = new HullGridPoints(10, 0, 10);
   controlPoints = miner->findControlPoints(back1, back2);
   std::cout << controlPoints.size() << std::endl;
-  
+*/
 
 /*
   for (auto it=back->neighbors.begin(); it!=back->neighbors.end(); it++) {
@@ -564,24 +568,29 @@ int main(int argc, char* argv[])
   }
 */
 
-
-
 /*
-  Data::Part* back1 = data1->findPartByType(Data::Part::Type::SEAT_SHEET);
-  Data::Part* back2 = data2->findPartByType(Data::Part::Type::SEAT_SHEET);
-  ControlPointsMiner* controlPointsMiner;
+  data = parser->load("chair2.obj");
+  Data* data2 = parser->load("chair6.obj");
+  Data::Part* back1 = data->findPartByType(Data::Part::Type::BACK_SHEET);
+  Data::Part* back2 = data2->findPartByType(Data::Part::Type::BACK_SHEET);
+  // ControlPointsMiner* controlPointsMiner;
   // HullGridPoints* hullGridPoints = new HullGridPoints();
-  // controlPointsMiner = new HullGridPoints(10, 10, 0);
+  // controlPointsMiner = new HullGridPoints(10, 0, 10);
   // controlPointsMiner = new BoxIntersectionPoints();
-  controlPointsMiner = new BoxIntersectionTargetPoints();
+  // controlPointsMiner = new BoxIntersectionTargetPoints();
   // ClosestConnectingPoints* closestConnectingPoints = new ClosestConnectingPoints();
   // EightPoints* eightPoints = new EightPoints();
-  controlPoints = controlPointsMiner->findControlPoints(back1, back2);
+  // controlPoints = controlPointsMiner->findControlPoints(back1, back2);
   // std::cout << controlPoints.size() << std::endl;
+  std::vector<ControlPointsMiner*> controlPointsMiners;
+  controlPointsMiners.push_back(new HullGridRays(10, 0, 10));
+
+  // mixer = new KNNWeightedInterpolation(controlPointsMiners, 10, 10.);
+  mixer = new RigidTransform(controlPointsMiners);
+  Data::Part* part = mixer->mixPart(back1, back2);
+  data->replacePartByType(part);
+  controlPoints = mixer->totalControlPoints;
 */
-
-
-
 
 //  data->findPartsNeighborsByBoxIntersection();
 //  for (auto pit = data->parts.begin(); pit != data->parts.end(); pit++) {

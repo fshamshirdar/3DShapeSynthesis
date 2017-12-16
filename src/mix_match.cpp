@@ -3,6 +3,7 @@
 #include "control_points/eight_points.h"
 #include "control_points/closest_connecting_points.h"
 #include "control_points/hull_grid_points.h"
+#include "control_points/hull_grid_rays.h"
 #include "control_points/box_intersection_points.h"
 #include "control_points/box_intersection_target_points.h"
 #include "control_points/missing_connecting_points.h"
@@ -114,11 +115,15 @@ Data* MixMatch::mixBack(Data* data1, Data* data2)
 	}
 	controlPointsMiners.push_back(new BoxIntersectionPoints());
 //	controlPointsMiners.push_back(new MissingConnectingPoints());
-	controlPointsMiners.push_back(new HullGridPoints(grid_x, 0, grid_z));
+	if (rand() % 2 == 0) {
+		controlPointsMiners.push_back(new HullGridPoints(grid_x, 0, grid_z));
+	} else {
+		controlPointsMiners.push_back(new HullGridRays(grid_x, 0, grid_z));
+	}
 
 	// Mixers
 	int K = rand() % 10 + 6;
-	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 	std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 	std::vector<MixMatch*> mixers;
@@ -133,6 +138,9 @@ Data* MixMatch::mixBack(Data* data1, Data* data2)
 	std::cout << "mixer: " << mixer->name << std::endl;
 
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	totalControlPoints = mixer->totalControlPoints;
@@ -175,27 +183,35 @@ Data* MixMatch::mixHandles(Data* data1, Data* data2)
 
 		// Mixers
 		int K = rand() % 10 + 7;
-		float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+		float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 		std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 		mixers.push_back(new RigidTransform(controlPointsMiners));
-		mixers.push_back(new SimpleBox());
+//		mixers.push_back(new SimpleBox());
 		mixers.push_back(new IntersectionBox());
-//		mixers.push_back(new KNNWeightedInterpolation(controlPointsMiners, K, maxDist));
+		mixers.push_back(new KNNWeightedInterpolation(controlPointsMiners, K, maxDist));
 	}
 
 	std::random_shuffle(mixers.begin(), mixers.end());
 	MixMatch* mixer = *(mixers.begin());
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
+	// Right handles
+	Data::Part* target2 = data1->findPartByType(Data::Part::Type::RIGHT_HANDLE);
+	Data::Part* ref2 = data2->findPartByType(Data::Part::Type::RIGHT_HANDLE);
 	if (! missing) {
-		target = data1->findPartByType(Data::Part::Type::RIGHT_HANDLE);
+		target2 = data1->findPartByType(Data::Part::Type::SEAT_SHEET);
 	}
-	ref = data2->findPartByType(Data::Part::Type::RIGHT_HANDLE);
-	target = data1->findPartByType(Data::Part::Type::RIGHT_HANDLE);
-	ref = mixer->mixPart(ref, target);
-	data1->replacePartByType(ref);
+
+	ref2 = mixer->mixPart(ref2, target2);
+	if (! ref2) {
+		return NULL;
+	}
+	data1->replacePartByType(ref2);
 
 	std::cout << "mixer: " << mixer->name << std::endl;
 
@@ -214,7 +230,7 @@ Data* MixMatch::mixLeg(Data* data1, Data* data2)
 	int grid_z = rand() % 5 + 2;
 
 	int K = rand() % 10 + 6;
-	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 	std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 	std::vector<MixMatch*> mixers;
@@ -229,9 +245,12 @@ Data* MixMatch::mixLeg(Data* data1, Data* data2)
 			if (rand() % 5 == 0) {
 				controlPointsMiners.push_back(new MissingConnectingPoints());
 			}
-			if (rand() % 2 == 0) {
-				controlPointsMiners.push_back(new HullGridPoints(grid_x, grid_y, grid_z));
+			if (rand() % 3 == 0) {
+				controlPointsMiners.push_back(new HullGridPoints(grid_x, 0, grid_z));
+			} else if (rand() % 3 == 0) {
+				controlPointsMiners.push_back(new HullGridRays(grid_x, 0, grid_z));
 			}
+
 
 			mixers.push_back(new RigidTransform(controlPointsMiners));
 //			mixers.push_back(new MissingIntersectionPart());
@@ -258,8 +277,10 @@ Data* MixMatch::mixLeg(Data* data1, Data* data2)
 			if (rand() % 5 == 0) {
 				controlPointsMiners.push_back(new MissingConnectingPoints());
 			}
-			if (rand() % 2 == 0) {
+			if (rand() % 3 == 0) {
 				controlPointsMiners.push_back(new HullGridPoints(grid_x, grid_y, grid_z));
+			} else if (rand() % 3 == 0) {
+				controlPointsMiners.push_back(new HullGridRays(grid_x, grid_y, grid_z));
 			}
 
 			mixers.push_back(new RigidTransform(controlPointsMiners));
@@ -288,8 +309,10 @@ Data* MixMatch::mixLeg(Data* data1, Data* data2)
 			if (rand() % 5 == 0) {
 				controlPointsMiners.push_back(new MissingConnectingPoints());
 			}
-			if (rand() % 2 == 0) {
+			if (rand() % 3 == 0) {
 				controlPointsMiners.push_back(new HullGridPoints(grid_x, grid_y, grid_z));
+			} else if (rand() % 3 == 0) {
+				controlPointsMiners.push_back(new HullGridRays(grid_x, grid_y, grid_z));
 			}
 
 			mixers.push_back(new RigidTransform(controlPointsMiners));
@@ -307,6 +330,9 @@ Data* MixMatch::mixLeg(Data* data1, Data* data2)
 	MixMatch* mixer = *(mixers.begin());
 
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	std::cout << "mixer: " << mixer->name << std::endl;
@@ -326,7 +352,7 @@ Data* MixMatch::mixFrontLeg(Data* data1, Data* data2)
 	int grid_z = rand() % 5 + 2;
 
 	int K = rand() % 10 + 6;
-	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 	std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 	if (target->regions.size() == 0 || ref->regions.size() == 0) {
@@ -343,14 +369,16 @@ Data* MixMatch::mixFrontLeg(Data* data1, Data* data2)
 	if (rand() % 5 == 0) {
 		controlPointsMiners.push_back(new MissingConnectingPoints());
 	}
-	if (rand() % 2 == 0) {
+	if (rand() % 3 == 0) {
 		controlPointsMiners.push_back(new HullGridPoints(grid_x, grid_y, grid_z));
+	} else if (rand() % 3 == 0) {
+		controlPointsMiners.push_back(new HullGridRays(grid_x, grid_y, grid_z));
 	}
 
 	mixers.push_back(new RigidTransform(controlPointsMiners));
 //	mixers.push_back(new MissingIntersectionPart());
 //	mixers.push_back(new MissingPart());
-	mixers.push_back(new SimpleBox());
+//	mixers.push_back(new SimpleBox());
 	mixers.push_back(new IntersectionBox());
 	mixers.push_back(new KNNWeightedInterpolation(controlPointsMiners, K, maxDist));
 
@@ -358,6 +386,9 @@ Data* MixMatch::mixFrontLeg(Data* data1, Data* data2)
 	MixMatch* mixer = *(mixers.begin());
 
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	std::cout << "mixer: " << mixer->name << std::endl;
@@ -377,7 +408,7 @@ Data* MixMatch::mixBackLeg(Data* data1, Data* data2)
 	int grid_z = rand() % 5 + 2;
 
 	int K = rand() % 10 + 6;
-	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 	std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 	if (target->regions.size() == 0 || ref->regions.size() == 0) {
@@ -393,14 +424,16 @@ Data* MixMatch::mixBackLeg(Data* data1, Data* data2)
 	if (rand() % 5 == 0) {
 		controlPointsMiners.push_back(new MissingConnectingPoints());
 	}
-	if (rand() % 2 == 0) {
+	if (rand() % 3 == 0) {
 		controlPointsMiners.push_back(new HullGridPoints(grid_x, grid_y, grid_z));
+	} else if (rand() % 3 == 0) {
+		controlPointsMiners.push_back(new HullGridRays(grid_x, grid_y, grid_z));
 	}
 
 	mixers.push_back(new RigidTransform(controlPointsMiners));
 //	mixers.push_back(new MissingIntersectionPart());
 //	mixers.push_back(new MissingPart());
-	mixers.push_back(new SimpleBox());
+//	mixers.push_back(new SimpleBox());
 	mixers.push_back(new IntersectionBox());
 	mixers.push_back(new KNNWeightedInterpolation(controlPointsMiners, K, maxDist));
 
@@ -408,6 +441,9 @@ Data* MixMatch::mixBackLeg(Data* data1, Data* data2)
 	MixMatch* mixer = *(mixers.begin());
 
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	std::cout << "mixer: " << mixer->name << std::endl;
@@ -439,17 +475,20 @@ Data* MixMatch::mixBar(Data* data1, Data* data2)
 
 	// Mixers
 	int K = rand() % 10 + 6;
-	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+	float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 	std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 	mixers.push_back(new RigidTransform(controlPointsMiners));
-	mixers.push_back(new SimpleBox());
+//	mixers.push_back(new SimpleBox());
 	mixers.push_back(new IntersectionBox());
 	mixers.push_back(new KNNWeightedInterpolation(controlPointsMiners, K, maxDist));
 
 	std::random_shuffle(mixers.begin(), mixers.end());
 	MixMatch* mixer = *(mixers.begin());
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	std::cout << "mixer: " << mixer->name << std::endl;
@@ -498,11 +537,11 @@ Data* MixMatch::mixBranch(Data* data1, Data* data2)
 
 		// Mixers
 		int K = rand() % 10 + 6;
-		float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.1;
+		float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.1;
 		std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 		mixers.push_back(new RigidTransform(controlPointsMiners));
-		mixers.push_back(new SimpleBox());
+//		mixers.push_back(new SimpleBox());
 		mixers.push_back(new IntersectionBox());
 		mixers.push_back(new KNNWeightedInterpolation(controlPointsMiners, K, maxDist));
 	}
@@ -510,6 +549,9 @@ Data* MixMatch::mixBranch(Data* data1, Data* data2)
 	std::random_shuffle(mixers.begin(), mixers.end());
 	MixMatch* mixer = *(mixers.begin());
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	std::cout << "mixer: " << mixer->name << std::endl;
@@ -558,7 +600,7 @@ Data* MixMatch::mixBase(Data* data1, Data* data2)
 
 		// Mixers
 		int K = rand() % 10 + 6;
-		float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/0.5)) + 0.2;
+		float maxDist = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.5)) + 0.2;
 		std::cout << "K: " << K << " maxDist: " << maxDist << std::endl;
 
 		mixers.push_back(new RigidTransform(controlPointsMiners));
@@ -570,6 +612,9 @@ Data* MixMatch::mixBase(Data* data1, Data* data2)
 	std::random_shuffle(mixers.begin(), mixers.end());
 	MixMatch* mixer = *(mixers.begin());
 	ref = mixer->mixPart(ref, target);
+	if (! ref) {
+		return NULL;
+	}
 	data1->replacePartByType(ref);
 
 	std::cout << "mixer: " << mixer->name << std::endl;

@@ -3,6 +3,8 @@
 #include <iostream>
 
 #define DIST_THR 10.
+#define MAX_SCALE_THR 2.0
+#define MIN_SCALE_THR 0.5
 
 MissingIntersectionPart::MissingIntersectionPart()
 {
@@ -57,9 +59,15 @@ Data::Part* MissingIntersectionPart::mixPart(Data::Part* ref, Data::Part* target
 	if (len == 0) {
 		scales = Eigen::Vector3f::Ones();
 		translations = Eigen::Vector3f::Zero();
+		return NULL;
 	} else {
 		scales[0] /= len; scales[1] /= len; scales[2] /= len;
 		translations[0] /= len; translations[1] /= len; translations[2] /= len;
+	}
+
+	if (scales[0] < MIN_SCALE_THR || scales[1] < MIN_SCALE_THR || scales[2] < MIN_SCALE_THR ||
+	    scales[0] > MAX_SCALE_THR || scales[1] > MAX_SCALE_THR || scales[2] > MAX_SCALE_THR) {
+		return NULL;
 	}
 
 	std::cout << "len: " << len << std::endl << scales << std::endl;

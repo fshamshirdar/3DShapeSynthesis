@@ -34,6 +34,7 @@ add_executable(smf_view
 	src/control_points/eight_points.cpp
 	src/control_points/closest_connecting_points.cpp
 	src/control_points/hull_grid_points.cpp
+	src/control_points/hull_grid_rays.cpp
 	src/control_points/box_intersection_points.cpp
 	src/control_points/box_intersection_target_points.cpp
 	src/control_points/missing_connecting_points.cpp

@@ -27,6 +27,12 @@ Data* RigidTransform::mix(Data* chair1, Data* chair2)
 
 Data::Part* RigidTransform::mixPart(Data::Part* ref, Data::Part* target)
 {
+	Eigen::Vector3f baseScale = (ref->boundingBox.min() + ref->boundingBox.max()) / 2.;
+	ref->scale(target->boundingBox, baseScale);
+	// Eigen::Vector3f translation = ((target->boundingBox.max() - ref->boundingBox.max()) + (target->boundingBox.max() - ref->boundingBox.max())) / 2.;
+	Eigen::Vector3f translation = (target->boundingBox.min() - ref->boundingBox.min());
+	ref->translate(translation);
+
 	int len = 0;
 	std::pair<Eigen::Matrix3f, Eigen::Vector3f> transformation;
 	std::vector<Eigen::Vector3f> sourcePoints, targetPoints;
@@ -49,9 +55,11 @@ Data::Part* RigidTransform::mixPart(Data::Part* ref, Data::Part* target)
 
 	std::cout << "len: " << sourcePoints.size() << std::endl;
 
-	if (sourcePoints.size() > 3) {
+	if (sourcePoints.size() > 5) {
 		transformation = Utils::computeRigidTransform(sourcePoints, targetPoints);
 		ref->transform(transformation);
+	} else {
+		return NULL;
 	}
 	ref->recalculateNormals();
 
