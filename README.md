@@ -1,1 +1,3 @@
-# 3D shape (chair) genenation given a set of chairs. using rigid, non-rigid and similarity transformations.
+# 3D shape (chair) genenation
+
+Given a set of chairs. using rigid, non-rigid and similarity transformations.
