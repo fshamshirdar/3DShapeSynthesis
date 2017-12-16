@@ -100,17 +100,19 @@ void Data::replacePartByType(Data::Part* part)
 		deletePartByType(Data::Part::Type::FOUR_LEGGED);
 		deletePartByType(Data::Part::Type::SINGLE_LEGGED);
 		deletePartByType(Data::Part::Type::TWO_LEGGED);
+		return;
 	} else {
 		for (int i=0; i < parts.size(); i++) {
 			if (parts[i]->type == part->type) {
 				parts[i] = part;
+				parts[i]->parent = this;
 				return;
 			}
 		}
 	}
 
-	//findPartByType(part->type);
-	//replacePartByType(part);
+	findPartByType(part->type);
+	replacePartByType(part);
 }
 
 void Data::deletePartByType(Data::Part::Type type)

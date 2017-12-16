@@ -43,6 +43,9 @@ Data* MixMatch::mix()
 	switch(category) {
 		case 0:
 			data1 = mixBack(data1, data2);
+			if (! data1) {
+				return mix();
+			}
 		break;
 		case 1:
 			data1 = mixHandles(data1, data2);
@@ -150,6 +153,9 @@ Data* MixMatch::mixBack(Data* data1, Data* data2)
 
 Data* MixMatch::mixHandles(Data* data1, Data* data2)
 {
+	Data* data1Clone = data1->clone();
+	Data* data2Clone = data2->clone();
+
 	Data::Part* target = data1->findPartByType(Data::Part::Type::LEFT_HANDLE);
 	Data::Part* ref = data2->findPartByType(Data::Part::Type::LEFT_HANDLE);
 
@@ -198,19 +204,20 @@ Data* MixMatch::mixHandles(Data* data1, Data* data2)
 	if (! ref) {
 		return NULL;
 	}
-	data1->replacePartByType(ref);
 
 	// Right handles
-	Data::Part* target2 = data1->findPartByType(Data::Part::Type::RIGHT_HANDLE);
-	Data::Part* ref2 = data2->findPartByType(Data::Part::Type::RIGHT_HANDLE);
-	if (! missing) {
-		target2 = data1->findPartByType(Data::Part::Type::SEAT_SHEET);
+	Data::Part* target2 = data1Clone->findPartByType(Data::Part::Type::RIGHT_HANDLE);
+	Data::Part* ref2 = data2Clone->findPartByType(Data::Part::Type::RIGHT_HANDLE);
+	if (missing) {
+		target2 = data1Clone->findPartByType(Data::Part::Type::SEAT_SHEET);
 	}
 
 	ref2 = mixer->mixPart(ref2, target2);
 	if (! ref2) {
 		return NULL;
 	}
+
+	data1->replacePartByType(ref);
 	data1->replacePartByType(ref2);
 
 	std::cout << "mixer: " << mixer->name << std::endl;

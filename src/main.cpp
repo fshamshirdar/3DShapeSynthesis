@@ -528,18 +528,50 @@ int main(int argc, char* argv[])
   mixer->datas.push_back(parser->load("SingleLegChair.obj"));
 */
 
-  mixer->datas.push_back(parser->load("chair1.obj"));
-  mixer->datas.push_back(parser->load("chair2.obj"));
-  mixer->datas.push_back(parser->load("chair3.obj"));
-  mixer->datas.push_back(parser->load("chair4.obj"));
-  mixer->datas.push_back(parser->load("chair5.obj"));
-  mixer->datas.push_back(parser->load("chair6.obj"));
-  mixer->datas.push_back(parser->load("chair7.obj"));
-  mixer->datas.push_back(parser->load("chair8.obj"));
+  mixer->datas.push_back(parser->load("../input/chair1.obj"));
+  mixer->datas.push_back(parser->load("../input/chair2.obj"));
+  mixer->datas.push_back(parser->load("../input/chair3.obj"));
+  mixer->datas.push_back(parser->load("../input/chair4.obj"));
+  mixer->datas.push_back(parser->load("../input/chair5.obj"));
+  mixer->datas.push_back(parser->load("../input/chair6.obj"));
+  mixer->datas.push_back(parser->load("../input/chair7.obj"));
+  mixer->datas.push_back(parser->load("../input/chair8.obj"));
 
+/*
+  mixer->datas.push_back(parser->load("NEW__1098"));
   mixer->datas.push_back(parser->load("NEW__2251"));
+  mixer->datas.push_back(parser->load("NEW__3306"));
+  mixer->datas.push_back(parser->load("NEW__3760"));
+  mixer->datas.push_back(parser->load("NEW__4011"));
+  mixer->datas.push_back(parser->load("NEW__4843"));
+  mixer->datas.push_back(parser->load("NEW__5925"));
+  mixer->datas.push_back(parser->load("NEW__6166"));
+  mixer->datas.push_back(parser->load("NEW__6466"));
+  mixer->datas.push_back(parser->load("NEW__6991"));
+  mixer->datas.push_back(parser->load("NEW__7922"));
+  mixer->datas.push_back(parser->load("NEW__8379"));
+  mixer->datas.push_back(parser->load("NEW__8491"));
+  mixer->datas.push_back(parser->load("NEW__8715"));
+  mixer->datas.push_back(parser->load("NEW__9748"));
+  mixer->datas.push_back(parser->load("NEW__9988"));
+  mixer->datas.push_back(parser->load("NEW__1748"));
+  mixer->datas.push_back(parser->load("NEW__3042"));
   mixer->datas.push_back(parser->load("NEW__3369"));
   mixer->datas.push_back(parser->load("NEW__3849"));
+  mixer->datas.push_back(parser->load("NEW__4798"));
+  mixer->datas.push_back(parser->load("NEW__5841"));
+  mixer->datas.push_back(parser->load("NEW__593"));
+  mixer->datas.push_back(parser->load("NEW__6435"));
+  mixer->datas.push_back(parser->load("NEW__682"));
+  mixer->datas.push_back(parser->load("NEW__7335"));
+  mixer->datas.push_back(parser->load("NEW__832"));
+  mixer->datas.push_back(parser->load("NEW__8437"));
+  mixer->datas.push_back(parser->load("NEW__8571"));
+  mixer->datas.push_back(parser->load("NEW__9066"));
+  mixer->datas.push_back(parser->load("NEW__987"));
+*/
+
+
 
 /*
   mixer->datas.push_back(parser->load("NEW_swivelChair1.obj_FancyChair.obj_79"));
@@ -604,7 +636,7 @@ int main(int argc, char* argv[])
   glutInitWindowPosition(50, 50);
   glutInitWindowSize(800, 800);
  
-  main_window = glutCreateWindow("Assignment 1");
+  main_window = glutCreateWindow("Mix-n-Match");
   glutDisplayFunc(myGlutDisplay);
   GLUI_Master.set_glutReshapeFunc(myGlutReshape);
   GLUI_Master.set_glutKeyboardFunc(myGlutKeyboard);
